@@ -6,12 +6,11 @@ onMounted(async () => {
   const urlParams = new URLSearchParams(window.location.search);
 
   // Obtiene el valor del parámetro 'token'
-  console.log('Parámetros de la URL:', urlParams.toString());
   const ltik = urlParams.get('ltik');
   
   if (ltik) {
     sessionStorage.setItem('ltik', ltik);
-    console.log('ltik guardado en sessionStorage:', sessionStorage.getItem('ltik'));
+    console.log('ltik guardado en sessionStorage:');
   }
   const url = 'https://dithionous-unautomatically-cheri.ngrok-free.dev'
   const result = await fetch(`${url}/info`, {

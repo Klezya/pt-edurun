@@ -22,9 +22,10 @@ lti.setup(process.env.LTI_KEY,
 
 // When receiving successful LTI launch redirects to app
 lti.onConnect(async (token, req, res) => {
+  console.log(res.locals)
   const ltik = res.locals.ltik;
   // Construye la URL de redirección con el token como parámetro de búsqueda
-  const redirectUrl = `https://frontend.loca.lt/?token=${ltik}`;
+  const redirectUrl = `https://frontend.loca.lt/?ltik=${ltik}`;
   // Redirige al usuario a tu frontend
   return res.redirect(redirectUrl);
 })
