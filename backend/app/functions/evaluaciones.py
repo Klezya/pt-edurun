@@ -1,13 +1,8 @@
-import os
-from supabase import create_client, Client
-
-url: str = os.environ.get("SUPABASE_URL")
-key: str = os.environ.get("SUPABASE_KEY")
-supabase: Client = create_client(url, key)
+from functions.supabase import supabaseClient
 
 def get_evaluaciones():
     response = (
-        supabase.table("evaluacion")
+        supabaseClient.table("evaluacion")
         .select("id, titulo, fecha_limite")
         .execute()
     )
@@ -15,7 +10,7 @@ def get_evaluaciones():
 
 def get_evaluacion_by_id(evaluacion_id: int):
     response = (
-        supabase.table("evaluacion")
+        supabaseClient.table("evaluacion")
         .select("id, titulo, fecha_limite, contenido")
         .eq("id", evaluacion_id)
         .execute()
@@ -27,7 +22,7 @@ def get_evaluacion_by_id(evaluacion_id: int):
 
 def get_evaluacion_test(evaluacion_id: int):
     response = (
-        supabase.table("evaluacion")
+        supabaseClient.table("evaluacion")
         .select("tests")
         .eq("id", evaluacion_id)
         .execute()

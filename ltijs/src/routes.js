@@ -101,26 +101,53 @@ router.get('/resources', async (req, res) => {
 })
 
 // Get user and context information
-router.get('/info', async (req, res) => {
-  const token = res.locals.token
-  const context = res.locals.context
+// router.get('/info', async (req, res) => {
+//   const token = res.locals.token
+//   const context = res.locals.context
 
+//   const info = { }
+//   if (token.userInfo) {
+//     if (token.userInfo.name) info.name = token.userInfo.name
+//     if (token.userInfo.email) info.email = token.userInfo.email
+//   }
+
+//   if (context.roles) info.roles = context.roles
+//   if (context.context) info.context = context.context
+
+//   return res.send(info)
+// })
+
+router.get('/info/user', async (req, res) => {
   const info = { }
-  if (token.userInfo) {
-    if (token.userInfo.name) info.name = token.userInfo.name
-    if (token.userInfo.email) info.email = token.userInfo.email
-  }
+  const userContext = res.locals.context
 
-  if (context.roles) info.roles = context.roles
-  if (context.context) info.context = context.context
-
+  if (userContext.user) info.userId = userContext.user
+  if (userContext.roles) info.roles = userContext.roles
   return res.send(info)
 })
 
-router.get('/api/me', async (req, res) => {
-  
-  return res.send({ name: 'Test User' })
+router.get('/info/course', async (req, res) => {
+  const info = { }
+  const userContext = res.locals.context
+
+  if (userContext.context) info.context = userContext.context
+  return res.send(info)
 })
+
+router.get('/info/platform', async (req, res) => {
+  const info = { }
+  const platformInfo = res.locals.token.platformInfo
+
+  if (platformInfo) {
+    info.guid = platformInfo.guid
+    info.name = platformInfo.name
+    info.version = platformInfo.version
+    info.product_family_code = platformInfo.product_family_code
+  }
+  
+  return res.send(info)
+})
+
 
 // Wildcard route to deal with redirecting to React routes
 //router.get('*', (req, res) => res.sendFile(path.join(__dirname, '../public/index.html')))

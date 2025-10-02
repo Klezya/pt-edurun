@@ -1,5 +1,4 @@
 import subprocess
-import tempfile
 import uuid
 import os
 from fastapi.responses import JSONResponse
@@ -40,7 +39,7 @@ def run_code_in_docker(code: str):
     }
 
 def run_unittest_in_docker(code: str, evaluacion_id: int):
-    from api.db import get_evaluacion_test
+    from functions.evaluaciones import get_evaluacion_test
     test = get_evaluacion_test(evaluacion_id).get("tests")
     
     user_file_id = str(uuid.uuid4())
