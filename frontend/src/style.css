@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+/* Global tweaks */
+html, body, #app {
+  height: 100%;
+}
+
+/* Fuerza esquema de color oscuro para controles nativos (scrollbars, inputs, etc.) */
+:root {
+  color-scheme: dark;
+}

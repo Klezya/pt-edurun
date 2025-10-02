@@ -1,0 +1,16 @@
+# Lightweight Python image with pytest preinstalled for running tests
+FROM python:3.11-slim
+
+# Prevents Python from writing .pyc files and buffers to stdout/stderr
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+# Install pytest and useful extras
+RUN pip install --no-cache-dir -U pip setuptools wheel \
+    && pip install --no-cache-dir pytest pytest-cov
+
+# Workdir where we'll mount code
+WORKDIR /app
+
+# Default command (can be overridden by docker run)
+CMD ["python", "-m", "pytest", "-q"]
