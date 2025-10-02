@@ -1,4 +1,4 @@
-const URL = 'https://fastapilti.loca.lt'
+const URL = 'https://backend.loca.lt/api'
 
 
 export async function getEvaluaciones() {
