@@ -6,6 +6,7 @@ import Interprete from '@/evaluacion/pages/interprete.vue'
 import TareasListEstudiante from './evaluacion/pages/tareas_list_estudiante.vue'
 import TareasListDocente from './evaluacion/pages/tareas_list_docente.vue'
 import SeleccionarEvaluacion from './evaluacion/pages/docente_select_evaluacion.vue'
+import CreateEvaluacion from './evaluacion/pages/docente_create_evaluacion.vue'
 import endpointtest from './lti/pages/endpointtest.vue'
 // Funciones
 import { getUserInfo } from './lti/services/info'
@@ -61,6 +62,7 @@ export const router = createRouter({
     { path: '/evaluacion/:id', name: 'entorno-evaluacion', component: Interprete, props: true },
     { path: '/seleccionar_evaluacion', name: 'seleccionar-evaluacion', component: SeleccionarEvaluacion },
     { path: '/testendpoint', name: 'testendpoint', component: endpointtest },
+    { path: '/crear_evaluacion', name: 'crear-evaluacion', component: CreateEvaluacion },
   ],
   scrollBehavior: () => ({ top: 0 }),
 })

@@ -5,4 +5,5 @@ export interface Evaluacion {
   contenido: string
   fecha_limite: string
   fecha_registro: string
+  test?: string
 }

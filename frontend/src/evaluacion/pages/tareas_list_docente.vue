@@ -76,9 +76,7 @@ function editarTarea(tarea: Tarea) {
 }
 
 function crearActividad() {
-  // TODO: Implementar creación de nueva actividad (evaluación o tarea)
-  console.log('Crear nueva actividad')
-  // router.push({ name: 'actividad-crear' })
+  router.push('/crear_evaluacion')
 }
 
 function toggleEvaluaciones() {
