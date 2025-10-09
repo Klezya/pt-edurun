@@ -9,15 +9,31 @@ router = APIRouter()
 async def health_check():
     return {"status": "ok"}
 
-@router.get("/evaluaciones/")
-async def read_evaluaciones():
-    from functions.evaluaciones import get_evaluaciones
-    return get_evaluaciones()
+# evaluaciones
 
-@router.get("/evaluaciones/{evaluacion_id}")
+@router.get("/evaluaciones/{course_id_lms}")
+async def read_evaluaciones(course_id_lms: str):
+    from functions.evaluaciones import get_evaluaciones_by_course_lms_id
+    return get_evaluaciones_by_course_lms_id(course_id_lms)
+
+@router.get("/evaluacion/{evaluacion_id}")
 async def read_evaluacion(evaluacion_id: int):
     from functions.evaluaciones import get_evaluacion_by_id
     return get_evaluacion_by_id(evaluacion_id)
+
+# tareas
+
+@router.get("/tareas/{course_id_lms}")
+async def read_tareas(course_id_lms: str):
+    from functions.tareas import get_tareas_by_course_lms_id
+    return get_tareas_by_course_lms_id(course_id_lms)
+
+@router.get("/tarea/{tarea_id}")
+async def read_tarea(tarea_id: int):
+    from functions.tareas import get_tarea_by_id
+    return get_tarea_by_id(tarea_id)
+
+# pendings
 
 @router.post("/send-code/")
 async def send_code(code: str = Form(...), evaluacion_id: int = Form(...)):

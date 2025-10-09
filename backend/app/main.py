@@ -1,16 +1,14 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from settings import FRONTEND_URL
+
 app = FastAPI(title="Edurun Python")
 
 origins = [
     "http://localhost",
-    "http://localhost:3000",
-    "http://localhost:5173",
     "http://127.0.0.1",
-    "http://127.0.0.1:3000",
-    "http://127.0.0.1:5173",
-    "https://frontend.loca.lt",
+    FRONTEND_URL,
 ]
 
 app.add_middleware(

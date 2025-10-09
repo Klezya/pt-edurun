@@ -1,46 +1,74 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { getUserInfo } from './lti/services/info'
+import { getUserInfo, getCourseInfo, getPlatformInfo } from './lti/services/info'
+import { registerInstance } from './lti/services/lti_fastapi'
 import { getRol } from './lti/interfaces/roles'
-import type { UserInfo } from './lti/interfaces/info'
+import type { UserInfo, CourseInfo, PlatformInfo } from './lti/interfaces/info'
 
 const router = useRouter()
 const loadingData = ref(true)
 const userInfo = ref<UserInfo | null>(null)
+const courseInfo = ref<CourseInfo | null>(null)
+const platformInfo = ref<PlatformInfo | null>(null)
 const role = ref<string | null>(null)
 const error = ref<string | null>(null)
 
-// Función para navegar a evaluaciones según el rol
-const navigateToEvaluaciones = () => {
+// Función para navegar a tareas según el rol
+const navigateToTareas = () => {
+    // Navegar según el rol
   if (role.value === 'docente') {
-    router.push({ name: 'evaluaciones-docente' })
+    router.push({ name: 'tareas-docente' })
   } else if (role.value === 'estudiante') {
-    router.push({ name: 'evaluaciones-estudiante' })
+    router.push({ name: 'tareas-estudiante' })
   } else {
     // Si no hay rol, navega a la ruta genérica
-    router.push({ name: 'evaluaciones' })
+    router.push({ name: 'tareas' })
   }
 }
 
 onMounted(async () => {
+  console.log('Cargando información del usuario y curso...')
   // Lee "ltik" de la URL y guárdalo para las peticiones
   const urlParams = new URLSearchParams(window.location.search)
   const ltik = urlParams.get('ltik')
   if (ltik) {
     sessionStorage.setItem('ltik', ltik)
-    console.log('ltik recibida')
   }
 
   try {
-    const info = await getUserInfo()
-    userInfo.value = info
-    role.value = getRol(info.roles)
+    userInfo.value = await getUserInfo()
+    courseInfo.value = await getCourseInfo()
+    platformInfo.value = await getPlatformInfo()
+
+    role.value = getRol(userInfo.value.roles)
+    
   } catch (e) {
     console.error(e)
     error.value = 'No se pudo cargar tu información.'
   } finally {
     loadingData.value = false
+  }
+
+  try {
+    // Registrar la instancia en el backend antes de navegar
+    if (userInfo.value && courseInfo.value && platformInfo.value) {
+      if (sessionStorage.getItem('instanceRegistered') === 'true' && 
+          sessionStorage.getItem('lastRegistration') === courseInfo.value.id &&
+          sessionStorage.getItem('userId') === userInfo.value.userId)
+      {
+        console.log('La instancia ya fue registrada previamente, no se registra de nuevo.')
+        return
+      }
+      await registerInstance(userInfo.value, courseInfo.value, platformInfo.value)
+      console.log('Instancia registrada exitosamente')
+      sessionStorage.setItem('instanceRegistered', 'true')
+      sessionStorage.setItem('lastRegistration', courseInfo.value.id)
+      sessionStorage.setItem('userId', userInfo.value.userId)
+    }
+  } catch (e) {
+    console.error('Error al registrar la instancia:', e)
+    // Continuar con la navegación incluso si hay error
   }
 })
 </script>
@@ -71,13 +99,13 @@ onMounted(async () => {
             <nav class="hidden md:block">
               <div class="flex items-center space-x-2">
                 <button 
-                  @click="navigateToEvaluaciones"
+                  @click="navigateToTareas"
                   class="rounded-lg px-4 py-2.5 text-sm font-medium text-slate-200 hover:bg-white/10 hover:text-white transition-all duration-200 hover:scale-105 cursor-pointer">
                   <span class="flex items-center gap-2">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
                     </svg>
-                    Evaluaciones
+                    Tareas
                   </span>
                 </button>
               </div>

@@ -1,31 +1,30 @@
 from functions.supabase import supabaseClient
 
-
-def get_evaluaciones_by_course_lms_id(course_id_lms: str):
+def get_tareas_by_course_lms_id(course_id_lms: str):
     from functions.lti import get_course_id_by_lms_id
     course_id = get_course_id_by_lms_id(course_id_lms).get("id")
     response = (
-        supabaseClient.table("evaluacion")
-        .select("id, titulo, fecha_limite")
+        supabaseClient.table("tarea")
+        .select("id, titulo")
         .eq("id_curso", course_id)
         .execute()
     )
     return response.data
 
-def get_evaluacion_by_id(evaluacion_id: int):
+def get_tarea_by_id(tarea_id: int):
     response = (
-        supabaseClient.table("evaluacion")
-        .select("id, titulo, fecha_limite, contenido")
-        .eq("id", evaluacion_id)
+        supabaseClient.table("tarea")
+        .select("id, titulo, contenido")
+        .eq("id", tarea_id)
         .execute()
     )
     return response.data[0]
 
-def get_evaluacion_test(evaluacion_id: int):
+def get_tarea_test(tarea_id: int):
     response = (
-        supabaseClient.table("evaluacion")
+        supabaseClient.table("tarea")
         .select("tests")
-        .eq("id", evaluacion_id)
+        .eq("id", tarea_id)
         .execute()
     )
     if response.data:

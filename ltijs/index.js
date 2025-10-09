@@ -5,6 +5,8 @@ const { url } = require('inspector')
 
 const lti = require('ltijs').Provider
 
+const frontendUrl = 'https://edurunfrontend.loca.lt'
+
 // Setup
 lti.setup(process.env.LTI_KEY,
   {
@@ -22,17 +24,25 @@ lti.setup(process.env.LTI_KEY,
 
 // When receiving successful LTI launch redirects to app
 lti.onConnect(async (token, req, res) => {
-  console.log(res.locals.token.platformContext.roles)
   const ltik = res.locals.ltik;
-  // Construye la URL de redirección con el token como parámetro de búsqueda
-  const redirectUrl = `https://frontend.loca.lt/?ltik=${ltik}`;
-  // Redirige al usuario a tu frontend
+  
+  if (!token.platformContext?.custom) {
+    const redirectUrl = `${frontendUrl}/?ltik=${ltik}`;
+    return res.redirect(redirectUrl);
+  }
+
+  const evaluacionId = token.platformContext.custom.value;
+  const redirectUrl = `${frontendUrl}/evaluacion/${evaluacionId}/?ltik=${ltik}`;
+
+  console.log(token.platformContext?.custom.value)
+
   return res.redirect(redirectUrl);
 })
 
 // When receiving deep linking request redirects to deep screen
 lti.onDeepLinking(async (token, req, res) => {
-  return lti.redirect(res, '/deeplink', { newResource: true })
+  deeplinkLtik = res.locals.ltik
+  return lti.redirect(res, `${frontendUrl}/seleccionar_evaluacion/?ltik=${deeplinkLtik}`)
 })
 
 // Setting up routes
@@ -45,7 +55,6 @@ const setup = async () => {
   await lti.deletePlatform('https://sandbox.moodledemo.net', 'Trymqct0j6KtREn')
   await lti.deletePlatform('https://edurundev.milaulas.com', 'taxkx5XEIY7b9VK')
   await lti.deletePlatform('https://172.19.202.187', '10000000000007')
-  await lti.deletePlatform('https://canvas.instructure.com', '10000000000007')
   /**
    * Register platform
    */
@@ -70,7 +79,7 @@ const setup = async () => {
     name: 'canvas',
     clientId: '10000000000007',
     authenticationEndpoint: 'https://172.19.202.187/api/lti/authorize_redirect',
-    accesstokenEndpoint: 'https://172.19.202.187/api/lti/token',
+    accesstokenEndpoint: 'https://172.19.202.187/login/oauth2/token',
     authConfig: { method: 'JWK_SET', key: 'https://172.19.202.187/api/lti/security/jwks' }
   })
 }

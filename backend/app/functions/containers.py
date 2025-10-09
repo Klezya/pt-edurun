@@ -11,7 +11,10 @@ def run_code_in_docker(code: str):
     script_path = os.path.join(SCRIPTS_DIR, f"{file_id}.py")
     
     with open(script_path, "w") as f:
-        f.write(code)
+        try:
+            f.write(code)
+        except Exception as e:
+            return JSONResponse(content={"error": "Error al escribir el script"}, status_code=500)
 
     # 2. Ejecutar el código dentro de un contenedor Docker
     cmd = [
@@ -47,11 +50,18 @@ def run_unittest_in_docker(code: str, evaluacion_id: int):
     user_script_path = os.path.join(SCRIPTS_DIR, f"{user_file_id}.py")
     test_script_path = os.path.join(SCRIPTS_DIR, f"{test_file_id}_test.py")
     
+
     with open(user_script_path, "w") as f:
-        f.write(code)
-    
+        try:
+            f.write(code)
+        except Exception as e:
+            return JSONResponse(content={"error": "Error al escribir el script del usuario"}, status_code=500)
+
     with open(test_script_path, "w") as f:
-        f.write(test)
+        try:
+            f.write(test)
+        except Exception as e:
+            return JSONResponse(content={"error": "Error al escribir el script de prueba"}, status_code=500)
 
     cmd = [
         "docker", "run", "--rm",

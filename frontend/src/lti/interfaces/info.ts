@@ -1,6 +1,7 @@
 export interface UserInfo {
     userId: string;
     roles: string[];
+    name?: string;
 }
 
 export interface CourseInfo {

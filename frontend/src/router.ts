@@ -1,11 +1,13 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import type { NavigationGuardNext, RouteLocationNormalized } from 'vue-router'
+// Vistas
 import Home from '@/Home.vue'
 import Interprete from '@/evaluacion/pages/interprete.vue'
-import EvaluacionList from '@/evaluacion/pages/evaluacion_list.vue'
-import EvaluacionListDocente from '@/evaluacion/pages/evaluacion_list_docente.vue'
-import EvaluacionListEstudiante from '@/evaluacion/pages/evaluacion_list_estudiante.vue'
+import TareasListEstudiante from './evaluacion/pages/tareas_list_estudiante.vue'
+import TareasListDocente from './evaluacion/pages/tareas_list_docente.vue'
+import SeleccionarEvaluacion from './evaluacion/pages/docente_select_evaluacion.vue'
 import endpointtest from './lti/pages/endpointtest.vue'
+// Funciones
 import { getUserInfo } from './lti/services/info'
 import { getRol } from './lti/interfaces/roles'
 
@@ -20,13 +22,10 @@ async function evaluacionesGuard(
     const rol = getRol(info.roles)
     
     if (rol === 'docente') {
-      // Redirige a la página de docente
       next({ name: 'evaluaciones-docente' })
     } else if (rol === 'estudiante') {
-      // Redirige a la página de estudiante
       next({ name: 'evaluaciones-estudiante' })
     } else {
-      // Si no hay rol o es desconocido, redirige al home
       next({ name: 'home' })
     }
   } catch (error) {
@@ -36,28 +35,31 @@ async function evaluacionesGuard(
 }
 
 export const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHistory(),
   routes: [
     { path: '/', name: 'home', component: Home },
-    // Ruta intermedia que redirige según el rol
+    // Ruta que redirige según el rol del usuario
     { 
-      path: '/evaluaciones', 
-      name: 'evaluaciones', 
-      component: EvaluacionList,
+      path: '/tareas', 
+      name: 'tareas', 
+      redirect: (to) => {
+        return { name: 'home' }
+      },
       beforeEnter: evaluacionesGuard
     },
-    // Rutas específicas por rol
     { 
-      path: '/evaluaciones/estudiante', 
-      name: 'evaluaciones-estudiante', 
-      component: EvaluacionListEstudiante 
+      path: '/tareas/estudiante', 
+      name: 'tareas-estudiante', 
+      component: TareasListEstudiante 
     },
     { 
-      path: '/evaluaciones/docente', 
-      name: 'evaluaciones-docente', 
-      component: EvaluacionListDocente
+      path: '/tareas/docente', 
+      name: 'tareas-docente', 
+      component: TareasListDocente
     },
+    { path: '/tarea/:id', name: 'entorno-tarea', component: Interprete, props: true },
     { path: '/evaluacion/:id', name: 'entorno-evaluacion', component: Interprete, props: true },
+    { path: '/seleccionar_evaluacion', name: 'seleccionar-evaluacion', component: SeleccionarEvaluacion },
     { path: '/testendpoint', name: 'testendpoint', component: endpointtest },
   ],
   scrollBehavior: () => ({ top: 0 }),

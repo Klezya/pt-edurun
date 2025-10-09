@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { getUserInfo, getCourseInfo, getPlatformInfo } from '../services/info'
+import { getUserInfo, getCourseInfo, getPlatformInfo, getAssignmentInfo } from '../services/info'
 import type { UserInfo, CourseInfo, PlatformInfo } from '../interfaces/info'
 import { isUserRegistered } from '../services/lti_fastapi'
 
@@ -9,12 +9,14 @@ const loadingUser = ref(false)
 const loadingCourse = ref(false)
 const loadingPlatform = ref(false)
 const loadingUserRegistered = ref(false)
+const loadingAssignment = ref(false)
 
 // Datos
 const userInfo = ref<UserInfo | null>(null)
 const courseInfo = ref<CourseInfo | null>(null)
 const platformInfo = ref<PlatformInfo | null>(null)
 const userRegisteredData = ref<any>(null)
+const assignmentInfo = ref<any>(null)
 
 // Input para userIdLms
 const userIdLmsInput = ref('')
@@ -24,6 +26,7 @@ const errorUser = ref<string | null>(null)
 const errorCourse = ref<string | null>(null)
 const errorPlatform = ref<string | null>(null)
 const errorUserRegistered = ref<string | null>(null)
+const errorAssignment = ref<string | null>(null)
 
 // Función para copiar JSON al portapapeles
 const copyToClipboard = (text: string) => {
@@ -101,11 +104,27 @@ const testUserRegistered = async () => {
   }
 }
 
+const testAssignmentInfo = async () => {
+  loadingAssignment.value = true
+  errorAssignment.value = null
+  assignmentInfo.value = null
+  
+  try {
+    const data = await getAssignmentInfo()
+    assignmentInfo.value = data
+  } catch (e: any) {
+    errorAssignment.value = e.message || 'Error al obtener información de la asignación'
+  } finally {
+    loadingAssignment.value = false
+  }
+}
+
 const testAllEndpoints = async () => {
   await Promise.all([
     testUserInfo(),
     testCourseInfo(),
-    testPlatformInfo()
+    testPlatformInfo(),
+    testAssignmentInfo()
   ])
 }
 
@@ -114,10 +133,12 @@ const clearAll = () => {
   courseInfo.value = null
   platformInfo.value = null
   userRegisteredData.value = null
+  assignmentInfo.value = null
   errorUser.value = null
   errorCourse.value = null
   errorPlatform.value = null
   errorUserRegistered.value = null
+  errorAssignment.value = null
   userIdLmsInput.value = ''
 }
 </script>
@@ -181,7 +202,7 @@ const clearAll = () => {
             <div class="flex flex-wrap gap-3">
               <button
                 @click="testAllEndpoints"
-                :disabled="loadingUser || loadingCourse || loadingPlatform"
+                :disabled="loadingUser || loadingCourse || loadingPlatform || loadingAssignment"
                 class="rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 px-6 py-2.5 text-sm font-semibold text-white shadow-lg hover:shadow-indigo-500/50 transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100">
                 <span class="flex items-center gap-2">
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -207,7 +228,7 @@ const clearAll = () => {
         </div>
 
         <!-- Endpoints Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <!-- User Info Endpoint -->
           <div class="rounded-2xl border border-white/10 bg-slate-950/40 backdrop-blur-md shadow-xl overflow-hidden">
             <div class="bg-gradient-to-r from-blue-600 to-cyan-600 px-6 py-4">
@@ -423,6 +444,78 @@ const clearAll = () => {
               </div>
             </div>
           </div>
+
+          <!-- Assignment Info Endpoint -->
+          <div class="rounded-2xl border border-white/10 bg-slate-950/40 backdrop-blur-md shadow-xl overflow-hidden">
+            <div class="bg-gradient-to-r from-rose-600 to-red-600 px-6 py-4">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <div class="bg-white/20 p-2 rounded-lg">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 class="text-lg font-bold text-white">Assignment Info</h3>
+                    <p class="text-xs text-rose-100">/info/assignment</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-6 space-y-4">
+              <button
+                @click="testAssignmentInfo"
+                :disabled="loadingAssignment"
+                class="w-full rounded-lg bg-rose-600 hover:bg-rose-500 px-4 py-3 text-sm font-semibold text-white transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100">
+                <span v-if="loadingAssignment" class="flex items-center justify-center gap-2">
+                  <svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                  </svg>
+                  Cargando...
+                </span>
+                <span v-else class="flex items-center justify-center gap-2">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  Ejecutar
+                </span>
+              </button>
+
+              <!-- Error State -->
+              <div v-if="errorAssignment" class="rounded-lg bg-red-900/30 border border-red-500/50 p-4">
+                <div class="flex items-start gap-2">
+                  <svg class="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  <p class="text-sm text-red-300">{{ errorAssignment }}</p>
+                </div>
+              </div>
+
+              <!-- Success State -->
+              <div v-if="assignmentInfo && !errorAssignment" class="space-y-3">
+                <div class="flex items-center justify-between">
+                  <span class="text-sm font-medium text-emerald-400 flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Respuesta exitosa
+                  </span>
+                  <button
+                    @click="copyToClipboard(formatJSON(assignmentInfo))"
+                    class="text-slate-400 hover:text-white transition-colors"
+                    title="Copiar JSON">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                    </svg>
+                  </button>
+                </div>
+                <pre class="bg-slate-900/60 rounded-lg p-4 text-xs text-slate-300 overflow-x-auto border border-white/5">{{ formatJSON(assignmentInfo) }}</pre>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- User Registered Check Section -->
@@ -535,6 +628,12 @@ const clearAll = () => {
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                   </svg>
                   <span>Puedes probar cada endpoint individualmente o todos a la vez (excepto Check User Registered)</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <svg class="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  <span>El botón "Probar Todo" ejecutará User Info, Course Info, Platform Info y Assignment Info simultáneamente</span>
                 </li>
                 <li class="flex items-start gap-2">
                   <svg class="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">

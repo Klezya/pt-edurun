@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+from models.lti import Usuario, Curso, Plataforma
 
 router = APIRouter()
 
@@ -6,7 +7,8 @@ router = APIRouter()
 async def get_canvas_data():
     return {"status": "ok"}
 
-@router.get("/check_user/{user_id_lms}")
-async def is_user_registered(user_id_lms: str):
-    from functions.lti import is_user_registered
-    return is_user_registered(user_id_lms)
+@router.post("/register_instance/")
+async def register_lti_launch(usuario: Usuario, curso: Curso, plataforma: Plataforma):
+    from functions.lti import register_lti_launch
+    result = register_lti_launch(usuario, curso, plataforma)
+    return result

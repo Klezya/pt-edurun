@@ -17,7 +17,7 @@ router.post('/grade', async (req, res) => {
       activityProgress: 'Completed',
       gradingProgress: 'FullyGraded'
     }
-
+    console.log('IdToken info:', idtoken.platformContext)
     // Selecting linetItem ID
     let lineItemId = idtoken.platformContext.endpoint.lineitem // Attempting to retrieve it from idtoken
     if (!lineItemId) {
@@ -36,7 +36,7 @@ router.post('/grade', async (req, res) => {
         lineItemId = lineItem.id
       } else lineItemId = lineItems[0].id
     }
-
+    console.log('Using line item id: ', lineItemId)
     // Sending Grade
     const responseGrade = await lti.Grade.submitScore(idtoken, lineItemId, gradeObj)
     return res.send(responseGrade)
@@ -71,7 +71,6 @@ router.post('/deeplink', async (req, res) => {
         value: resource.value
       }
     }
-
     const form = await lti.DeepLinking.createDeepLinkingForm(res.locals.token, items, { message: 'Successfully Registered' })
     if (form) return res.send(form)
     return res.sendStatus(500)
@@ -100,26 +99,15 @@ router.get('/resources', async (req, res) => {
   return res.send(resources)
 })
 
-// Get user and context information
-// router.get('/info', async (req, res) => {
-//   const token = res.locals.token
-//   const context = res.locals.context
-
-//   const info = { }
-//   if (token.userInfo) {
-//     if (token.userInfo.name) info.name = token.userInfo.name
-//     if (token.userInfo.email) info.email = token.userInfo.email
-//   }
-
-//   if (context.roles) info.roles = context.roles
-//   if (context.context) info.context = context.context
-
-//   return res.send(info)
-// })
 
 router.get('/info/user', async (req, res) => {
   const info = { }
   const userContext = res.locals.context
+  const usertoken = res.locals.token.userInfo
+
+  if (usertoken) {
+    if (usertoken.name) info.name = usertoken.name
+  }
 
   if (userContext.user) info.userId = userContext.user
   if (userContext.roles) info.roles = userContext.roles
@@ -128,9 +116,13 @@ router.get('/info/user', async (req, res) => {
 
 router.get('/info/course', async (req, res) => {
   const info = { }
-  const userContext = res.locals.context
+  const courseInfo = res.locals.context.context
 
-  if (userContext.context) info.context = userContext.context
+  if (courseInfo){
+    info.id = courseInfo.id
+    info.label = courseInfo.label
+    info.title = courseInfo.title
+  } 
   return res.send(info)
 })
 
@@ -148,6 +140,13 @@ router.get('/info/platform', async (req, res) => {
   return res.send(info)
 })
 
+router.get('/info/assignment', async (req, res) => {
+  idtoken = res.locals.token
+
+  console.log(idtoken.platformContext)
+
+  return res.send(idtoken.platformContext.endpoint.lineitem)
+})
 
 // Wildcard route to deal with redirecting to React routes
 //router.get('*', (req, res) => res.sendFile(path.join(__dirname, '../public/index.html')))

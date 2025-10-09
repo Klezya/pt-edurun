@@ -1,4 +1,4 @@
-const URL = 'https://backend.loca.lt/api'
+const URL = 'https://edurunbackend.loca.lt/api'
 
 
 export async function runCode(code: string): Promise<Response> {
