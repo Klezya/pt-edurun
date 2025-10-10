@@ -65,9 +65,8 @@ router.post('/deeplink', async (req, res) => {
 
     const items = {
       type: 'ltiResourceLink',
-      title: 'Ltijs Demo',
+      title: resource.name,
       custom: {
-        name: resource.name,
         value: resource.value
       }
     }

@@ -1,6 +1,6 @@
 const URL = 'https://edurunbackend.loca.lt/api'
 
-const LTIURL = 'https://1k4sjt-ip-190-101-201-29.tunnelmole.net'
+const LTIURL = 'https://kn3dxs-ip-190-101-201-29.tunnelmole.net'
 
 export async function getEvaluacionesByCourseLmsId(courseId: string) {
   const result = await fetch(`${URL}/evaluaciones/${courseId}`).then(res => res.json())

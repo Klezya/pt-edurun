@@ -32,3 +32,18 @@ def get_evaluacion_test(evaluacion_id: int):
         return response.data[0]
     else:
         return None
+    
+# Metodos Post
+from models.evaluacion import Evaluacion
+
+def create_evaluacion(evaluacion: Evaluacion):
+    response = (
+        supabaseClient.table("evaluacion")
+        .insert({"id_curso": evaluacion.id_curso,
+                 "titulo": evaluacion.titulo,
+                 "contenido": evaluacion.contenido,
+                 "fecha_limite": evaluacion.fecha_limite,
+                 "test": evaluacion.test})
+        .execute()
+    )
+    return response.data

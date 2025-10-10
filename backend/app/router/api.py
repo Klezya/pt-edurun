@@ -2,6 +2,8 @@ from fastapi import APIRouter
 
 # Funciones para manejar los endpoints
 from fastapi import Form
+from models.evaluacion import Evaluacion
+from models.tarea import Tarea
 
 router = APIRouter()
 
@@ -21,6 +23,12 @@ async def read_evaluacion(evaluacion_id: int):
     from functions.evaluaciones import get_evaluacion_by_id
     return get_evaluacion_by_id(evaluacion_id)
 
+@router.post("/evaluacion/")
+async def create_evaluacion(evaluacion: Evaluacion):
+    from functions.evaluaciones import create_evaluacion
+    response = create_evaluacion(evaluacion)
+    return response
+
 # tareas
 
 @router.get("/tareas/{course_id_lms}")
@@ -32,6 +40,12 @@ async def read_tareas(course_id_lms: str):
 async def read_tarea(tarea_id: int):
     from functions.tareas import get_tarea_by_id
     return get_tarea_by_id(tarea_id)
+
+@router.post("/tarea/")
+async def create_tarea(tarea: Tarea):
+    from functions.tareas import create_tarea
+    response = create_tarea(tarea)
+    return response
 
 # pendings
 

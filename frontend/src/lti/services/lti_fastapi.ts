@@ -8,6 +8,11 @@ export async function isUserRegistered(userIdLms: string) {
   return result
 }
 
+export async function getCourseIdByLmsId(courseIdLms: string): Promise<{ id: number } | { error: string }> {
+  const result = await fetch(`${URL}/course/${courseIdLms}`).then(res => res.json())
+  return result
+}
+
 export async function registerInstance(
   userInfo: UserInfo,
   courseInfo: CourseInfo,

@@ -4,7 +4,7 @@ import { onMounted, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
 // Servicios y tipos
-import { getEvaluacion } from '../services/evaluaciones'
+import { getEvaluacion, sendGrade } from '../services/evaluaciones'
 import type { Evaluacion } from '../interfaces/evaluacion'
 import { runCode, sendCode } from '../services/codigo'
 
@@ -29,6 +29,11 @@ print("Hola mundo")\n
 
 const consoleText = ref('')
 const isErrorInTerminal = ref(false)
+
+// Estado para el calificador
+const gradeValue = ref<number>(0)
+const isSendingGrade = ref(false)
+const gradeMessage = ref('')
 
 const codeMirrorContainer = ref<HTMLDivElement | null>(null)
 let view: EditorView | null = null
@@ -109,7 +114,45 @@ async function enviar() {
   }
 }
 
+async function enviarCalificacion() {
+  if (isSendingGrade.value) return
+  if (gradeValue.value < 0 || gradeValue.value > 100) {
+    gradeMessage.value = 'La nota debe estar entre 0 y 100'
+    return
+  }
+  
+  isSendingGrade.value = true
+  gradeMessage.value = ''
+  
+  try {
+    const res = await sendGrade(gradeValue.value)
+    
+    if (res.ok) {
+      gradeMessage.value = '✓ Nota enviada correctamente'
+      console.log('Nota enviada:', gradeValue.value)
+    } else {
+      gradeMessage.value = '✗ Error al enviar la nota'
+      console.error('Error en la respuesta:', res.statusText)
+    }
+  } catch (e) {
+    console.error('Error al enviar la calificación:', e)
+    gradeMessage.value = '✗ Error al enviar la nota'
+  } finally {
+    isSendingGrade.value = false
+    // Limpiar el mensaje después de 3 segundos
+    setTimeout(() => {
+      gradeMessage.value = ''
+    }, 3000)
+  }
+}
+
 onMounted(() => {
+  const urlParams = new URLSearchParams(window.location.search)
+  const ltik = urlParams.get('ltik')
+  if (ltik) {
+    sessionStorage.setItem('ltik', ltik)
+  }
+  
   cargarEvaluacion()
 
   if (codeMirrorContainer.value && !view) {
@@ -193,16 +236,44 @@ onBeforeUnmount(() => {
                 <p v-if="evaluacion" class="text-sm text-slate-400">{{ evaluacion.titulo }}</p>
               </div>
             </div>
-            <RouterLink
-              to="/evaluaciones"
-              class="inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-slate-200 hover:bg-white/10 hover:text-white transition-all duration-200 hover:scale-105"
-              title="Salir del intérprete"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-              </svg>
-              Volver
-            </RouterLink>
+            
+            <!-- Calificador -->
+            <div class="flex items-center gap-3">
+              <div class="flex flex-col items-end gap-1">
+                <div class="flex items-center gap-2">
+                  <label for="grade-input" class="text-sm font-medium text-slate-300">Calificación:</label>
+                  <input
+                    id="grade-input"
+                    v-model.number="gradeValue"
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.1"
+                    class="w-20 rounded-lg border border-white/20 bg-slate-900/50 px-3 py-2 text-sm text-white placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                    placeholder="0-100"
+                  />
+                  <button
+                    @click="enviarCalificacion"
+                    :disabled="isSendingGrade"
+                    class="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-amber-600 to-orange-700 px-4 py-2 text-white text-sm font-medium hover:from-amber-500 hover:to-orange-600 transition-all duration-200 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    <span>{{ isSendingGrade ? 'Enviando...' : 'Enviar Nota' }}</span>
+                  </button>
+                </div>
+                <span 
+                  v-if="gradeMessage" 
+                  :class="[
+                    'text-xs transition-opacity duration-300',
+                    gradeMessage.includes('✓') ? 'text-emerald-400' : 'text-rose-400'
+                  ]"
+                >
+                  {{ gradeMessage }}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </header>

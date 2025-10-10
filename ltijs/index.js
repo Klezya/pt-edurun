@@ -25,12 +25,13 @@ lti.setup(process.env.LTI_KEY,
 // When receiving successful LTI launch redirects to app
 lti.onConnect(async (token, req, res) => {
   const ltik = res.locals.ltik;
-  
+  console.log(token.platformContext)
+  console.log(token.platformContext?.custom)
   if (token.platformContext?.custom.value === undefined) {
     const redirectUrl = `${frontendUrl}/?ltik=${ltik}`;
     return res.redirect(redirectUrl);
   }
-
+  
   const evaluacionId = token.platformContext.custom.value;
   const redirectUrl = `${frontendUrl}/evaluacion/${evaluacionId}/?ltik=${ltik}`;
   

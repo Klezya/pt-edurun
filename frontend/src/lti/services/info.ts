@@ -1,6 +1,6 @@
 import type { CourseInfo, PlatformInfo, UserInfo } from "../interfaces/info"
 
-const URL = 'https://1k4sjt-ip-190-101-201-29.tunnelmole.net'
+const URL = 'https://kn3dxs-ip-190-101-201-29.tunnelmole.net'
 
 // Obtiene la información completa del usuario desde el endpoint /info
 export async function getUserInfo(): Promise<UserInfo> {

@@ -1,29 +1,79 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import type { Evaluacion } from '../interfaces/evaluacion'
+import { EditorView, basicSetup } from 'codemirror'
+import { python } from '@codemirror/lang-python'
+import { oneDark } from '@codemirror/theme-one-dark'
+import { createEvaluacion, createTarea } from '../services/evaluaciones_tareas'
 
 const router = useRouter()
 
 // Form data
 const formData = ref({
-  id_curso: null as number | null,
   titulo: '',
   contenido: '',
   fecha_limite: '',
-  test: ''
+  test: '',
+  tipo: 'tarea' as 'tarea' | 'evaluacion' // nuevo campo
 })
 
 const isSubmitting = ref(false)
 const errorMessage = ref('')
 const successMessage = ref('')
 
+// CodeMirror
+const editorContainer = ref<HTMLElement | null>(null)
+let editorView: EditorView | null = null
+
+const defaultPytestCode = `# Ejemplo de prueba para una función suma
+def test_suma_basica():
+    """Prueba básica de la función suma"""
+    assert suma(2, 3) == 5
+    assert suma(0, 0) == 0
+    assert suma(-1, 1) == 0
+
+def test_suma_negativos():
+    """Prueba con números negativos"""
+    assert suma(-5, -3) == -8
+    assert suma(-10, 5) == -5
+
+def test_suma_decimales():
+    """Prueba con números decimales"""
+    assert suma(2.5, 3.5) == 6.0
+    assert suma(0.1, 0.2) == 0.3
+`
+
+onMounted(() => {
+  if (editorContainer.value) {
+    editorView = new EditorView({
+      doc: formData.value.test || defaultPytestCode,
+      extensions: [
+        basicSetup,
+        python(),
+        oneDark,
+        EditorView.updateListener.of((update) => {
+          if (update.docChanged) {
+            formData.value.test = update.state.doc.toString()
+          }
+        }),
+      ],
+      parent: editorContainer.value,
+    })
+  }
+})
+
+// Initialize with default code if empty
+if (!formData.value.test) {
+  formData.value.test = defaultPytestCode
+}
+
 const handleSubmit = async () => {
   errorMessage.value = ''
   successMessage.value = ''
 
   // Validate required fields
-  if (!formData.value.id_curso || !formData.value.titulo || !formData.value.contenido) {
+  if (!formData.value.titulo || !formData.value.contenido) {
     errorMessage.value = 'Por favor complete todos los campos obligatorios'
     return
   }
@@ -32,25 +82,21 @@ const handleSubmit = async () => {
 
   try {
     // Prepare the data to send
-    const evaluacionData: Partial<Evaluacion> = {
-      id_curso: formData.value.id_curso,
+    const data = {
       titulo: formData.value.titulo,
       contenido: formData.value.contenido,
-      fecha_limite: formData.value.fecha_limite || undefined,
-      test: formData.value.test || undefined,
-      // fecha_registro will be set by the backend
+      fecha_limite: formData.value.fecha_limite || null,
+      test: formData.value.test || null,
     }
 
-    // TODO: Add the actual API call here
-    // Example:
-    // const response = await createEvaluacion(evaluacionData)
-    
-    console.log('Datos de evaluación a enviar:', evaluacionData)
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    successMessage.value = 'Evaluación creada exitosamente'
+    // Call the appropriate API based on tipo
+    if (formData.value.tipo === 'evaluacion') {
+      await createEvaluacion(data)
+      successMessage.value = 'Evaluación creada exitosamente'
+    } else {
+      await createTarea(data)
+      successMessage.value = 'Tarea creada exitosamente'
+    }
     
     // Reset form after successful submission
     setTimeout(() => {
@@ -58,8 +104,8 @@ const handleSubmit = async () => {
     }, 2000)
 
   } catch (error) {
-    console.error('Error al crear evaluación:', error)
-    errorMessage.value = error instanceof Error ? error.message : 'Error al crear la evaluación'
+    console.error('Error al crear:', error)
+    errorMessage.value = error instanceof Error ? error.message : `Error al crear la ${formData.value.tipo}`
   } finally {
     isSubmitting.value = false
   }
@@ -68,14 +114,19 @@ const handleSubmit = async () => {
 const handleCancel = () => {
   // Reset form
   formData.value = {
-    id_curso: null,
     titulo: '',
     contenido: '',
     fecha_limite: '',
-    test: ''
+    test: '',
+    tipo: 'tarea'
   }
   errorMessage.value = ''
   successMessage.value = ''
+  
+  // Clear editor
+  if (editorView) {
+    editorView.destroy()
+  }
   
   // Navigate back or to list
   router.back()
@@ -124,8 +175,8 @@ const handleCancel = () => {
       </header>
 
       <!-- Main Content -->
-      <main class="flex flex-grow items-center justify-center px-4 py-8">
-        <div class="mx-auto max-w-4xl w-full">
+      <main class="flex flex-grow items-start justify-center px-4 py-8">
+        <div class="mx-auto max-w-7xl w-full">
           <!-- Success Message -->
           <div v-if="successMessage" class="mb-6 rounded-xl border border-green-500/20 bg-green-950/40 backdrop-blur-md p-4">
             <div class="flex items-center gap-3">
@@ -148,73 +199,125 @@ const handleCancel = () => {
 
           <!-- Form Card -->
           <div class="rounded-2xl border border-white/10 bg-slate-950/40 backdrop-blur-md shadow-2xl overflow-hidden">
-            <form @submit.prevent="handleSubmit" class="p-8 space-y-6">
-                <!-- Título -->
-              <div class="space-y-2">
-                <label for="titulo" class="block text-sm font-medium text-slate-200">
-                  Título <span class="text-red-400">*</span>
-                </label>
-                <input
-                  id="titulo"
-                  v-model="formData.titulo"
-                  type="text"
-                  required
-                  placeholder="Ingrese el título de la evaluación"
-                  class="w-full rounded-lg border border-white/10 bg-slate-900/50 px-4 py-3 text-slate-100 placeholder:text-slate-500 focus:border-sky-500/50 focus:outline-none focus:ring-2 focus:ring-sky-500/20 transition-all"
-                />
-              </div>
+            <form @submit.prevent="handleSubmit" class="p-8">
+              <!-- Layout de dos columnas -->
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                
+                <!-- Columna Izquierda: Opciones del formulario -->
+                <div class="space-y-6">
+                  <h2 class="text-xl font-semibold text-slate-100 border-b border-white/10 pb-3">
+                    Información General
+                  </h2>
 
-                <!-- Contenido -->
-              <div class="space-y-2">
-                <label for="contenido" class="block text-sm font-medium text-slate-200">
-                  Contenido <span class="text-red-400">*</span>
-                </label>
-                <textarea
-                  id="contenido"
-                  v-model="formData.contenido"
-                  rows="8"
-                  required
-                  placeholder="Ingrese la descripción y detalles de la evaluación"
-                  class="w-full rounded-lg border border-white/10 bg-slate-900/50 px-4 py-3 text-slate-100 placeholder:text-slate-500 focus:border-sky-500/50 focus:outline-none focus:ring-2 focus:ring-sky-500/20 transition-all resize-vertical"
-                ></textarea>
-              </div>
+                  <!-- Switch: Tipo de actividad -->
+                  <div class="space-y-2">
+                    <label class="block text-sm font-medium text-slate-200">
+                      Tipo de Actividad <span class="text-red-400">*</span>
+                    </label>
+                    <div class="flex items-center gap-4 p-4 rounded-lg bg-slate-900/50 border border-white/10">
+                      <button
+                        type="button"
+                        @click="formData.tipo = 'tarea'"
+                        :class="[
+                          'flex-1 px-4 py-3 rounded-lg font-medium transition-all duration-200',
+                          formData.tipo === 'tarea'
+                            ? 'bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-lg shadow-sky-500/30'
+                            : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-slate-200'
+                        ]"
+                      >
+                        📝 Tarea
+                      </button>
+                      <button
+                        type="button"
+                        @click="formData.tipo = 'evaluacion'"
+                        :class="[
+                          'flex-1 px-4 py-3 rounded-lg font-medium transition-all duration-200',
+                          formData.tipo === 'evaluacion'
+                            ? 'bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-lg shadow-sky-500/30'
+                            : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-slate-200'
+                        ]"
+                      >
+                        📊 Evaluación
+                      </button>
+                    </div>
+                  </div>
+                  <!-- Título -->
+                  <div class="space-y-2">
+                    <label for="titulo" class="block text-sm font-medium text-slate-200">
+                      Título <span class="text-red-400">*</span>
+                    </label>
+                    <input
+                      id="titulo"
+                      v-model="formData.titulo"
+                      type="text"
+                      required
+                      placeholder="Ingrese el título"
+                      class="w-full rounded-lg border border-white/10 bg-slate-900/50 px-4 py-3 text-slate-100 placeholder:text-slate-500 focus:border-sky-500/50 focus:outline-none focus:ring-2 focus:ring-sky-500/20 transition-all"
+                    />
+                  </div>
 
-              <!-- Fecha Límite -->
-              <div class="space-y-2">
-                <label for="fecha_limite" class="block text-sm font-medium text-slate-200">
-                  Fecha Límite
-                </label>
-                <input
-                  id="fecha_limite"
-                  v-model="formData.fecha_limite"
-                  type="datetime-local"
-                  class="w-full rounded-lg border border-white/10 bg-slate-900/50 px-4 py-3 text-slate-100 placeholder:text-slate-500 focus:border-sky-500/50 focus:outline-none focus:ring-2 focus:ring-sky-500/20 transition-all"
-                />
-              </div>
+                  <!-- Contenido -->
+                  <div class="space-y-2">
+                    <label for="contenido" class="block text-sm font-medium text-slate-200">
+                      Descripción <span class="text-red-400">*</span>
+                    </label>
+                    <textarea
+                      id="contenido"
+                      v-model="formData.contenido"
+                      rows="8"
+                      required
+                      placeholder="Ingrese la descripción y detalles de la actividad"
+                      class="w-full rounded-lg border border-white/10 bg-slate-900/50 px-4 py-3 text-slate-100 placeholder:text-slate-500 focus:border-sky-500/50 focus:outline-none focus:ring-2 focus:ring-sky-500/20 transition-all resize-vertical"
+                    ></textarea>
+                  </div>
 
-              <!-- Test (Código Pytest) -->
-              <div class="space-y-2">
-                <label for="test" class="block text-sm font-medium text-slate-200">
-                  Código de Prueba (Pytest)
-                  <span class="text-slate-500 text-xs ml-2">(opcional)</span>
-                </label>
-                <textarea
-                  id="test"
-                  v-model="formData.test"
-                  rows="10"
-                  placeholder="Ingrese el código de pytest para evaluar las tareas&#10;Ejemplo:&#10;def test_example():&#10;    assert 1 + 1 == 2"
-                  class="w-full rounded-lg border border-white/10 bg-slate-900/50 px-4 py-3 text-slate-100 placeholder:text-slate-500 focus:border-sky-500/50 focus:outline-none focus:ring-2 focus:ring-sky-500/20 transition-all resize-vertical font-mono text-sm"
-                ></textarea>
-                <p class="text-slate-400 text-xs flex items-center gap-1">
-                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                  </svg>
-                  Escriba el código de prueba que se ejecutará para evaluar las tareas de los estudiantes
-                </p>
+                  <!-- Fecha Límite -->
+                  <div class="space-y-2">
+                    <label for="fecha_limite" class="block text-sm font-medium text-slate-200">
+                      Fecha Límite
+                      <span class="text-slate-500 text-xs ml-2">(opcional)</span>
+                    </label>
+                    <input
+                      id="fecha_limite"
+                      v-model="formData.fecha_limite"
+                      type="datetime-local"
+                      class="w-full rounded-lg border border-white/10 bg-slate-900/50 px-4 py-3 text-slate-100 placeholder:text-slate-500 focus:border-sky-500/50 focus:outline-none focus:ring-2 focus:ring-sky-500/20 transition-all"
+                    />
+                  </div>
+                </div>
+
+                <!-- Columna Derecha: Editor de código Pytest -->
+                <div class="space-y-4">
+                  <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                    <h2 class="text-xl font-semibold text-slate-100">
+                      Código de Prueba (Pytest)
+                    </h2>
+                    <span class="text-slate-500 text-xs">(opcional)</span>
+                  </div>
+                  
+                  <div class="space-y-3">
+                    <p class="text-slate-400 text-sm flex items-start gap-2">
+                      <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                      </svg>
+                      <span>
+                        Escriba el código de prueba que se ejecutará para evaluar las entregas de los estudiantes.
+                        El código debe incluir funciones con el mismo nombre que las funciones a evaluar, en este caso se evaluara la funcion <code class="px-1 py-0.5 bg-slate-800 rounded text-sky-400">suma()</code>
+                      </span>
+                    </p>
+                    
+                    <!-- CodeMirror Container -->
+                    <div 
+                      ref="editorContainer" 
+                      class="rounded-lg border border-white/10 overflow-hidden shadow-lg"
+                      style="height: 500px;"
+                    ></div>
+                  </div>
+                </div>
               </div>
 
               <!-- Form Actions -->
-              <div class="flex items-center justify-end gap-4 pt-6 border-t border-white/10">
+              <div class="flex items-center justify-end gap-4 pt-8 mt-8 border-t border-white/10">
                 <button
                   type="button"
                   @click="handleCancel"
@@ -233,7 +336,7 @@ const handleCancel = () => {
                   <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                   </svg>
-                  {{ isSubmitting ? 'Creando...' : 'Crear Evaluación' }}
+                  {{ isSubmitting ? 'Creando...' : formData.tipo === 'tarea' ? 'Crear Tarea' : 'Crear Evaluación' }}
                 </button>
               </div>
             </form>
@@ -247,5 +350,17 @@ const handleCancel = () => {
 
 
 <style scoped>
-/* Este componente usa Tailwind CSS, sin estilos personalizados adicionales */
+/* Estilos para CodeMirror */
+:deep(.cm-editor) {
+  height: 100%;
+  font-size: 14px;
+}
+
+:deep(.cm-scroller) {
+  font-family: 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
+}
+
+:deep(.cm-gutters) {
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
 </style>

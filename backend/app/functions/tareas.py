@@ -31,3 +31,18 @@ def get_tarea_test(tarea_id: int):
         return response.data[0]
     else:
         return None
+
+# Metodos Post
+from models.tarea import Tarea
+
+def create_tarea(tarea: Tarea):
+    response = (
+        supabaseClient.table("tarea")
+        .insert({"id_curso": tarea.id_curso,
+                 "titulo": tarea.titulo,
+                 "contenido": tarea.contenido,
+                 "fecha_limite": tarea.fecha_limite,
+                 "test": tarea.test})
+        .execute()
+    )
+    return response.data

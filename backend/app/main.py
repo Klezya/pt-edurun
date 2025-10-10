@@ -20,7 +20,7 @@ app.add_middleware(
 )
 
 # Routers
-from router.evaluaciones import router as evaluaciones_router
+from router.api import router as evaluaciones_router
 from router.lti import router as lti_router
 
 app.include_router(evaluaciones_router, prefix="/api")

@@ -30,7 +30,7 @@ onMounted(async () => {
 
 
 async function seleccionarEvaluacion(evaluacion: Evaluacion) {
-    const LTIURL = 'https://1k4sjt-ip-190-101-201-29.tunnelmole.net'
+    const LTIURL = 'https://kn3dxs-ip-190-101-201-29.tunnelmole.net'
 
     console.log('Evaluación seleccionada:', evaluacion.id)
 
@@ -46,7 +46,7 @@ async function seleccionarEvaluacion(evaluacion: Evaluacion) {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                name: 'evaluacion id', 
+                name: evaluacion.titulo, 
                 value: evaluacion.id 
             }),
         })
