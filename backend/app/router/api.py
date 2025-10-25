@@ -51,10 +51,21 @@ async def create_tarea(tarea: Tarea):
 
 @router.post("/send-code/")
 async def send_code(code: str = Form(...), evaluacion_id: int = Form(...)):
-    from functions.containers import run_unittest_in_docker
-    return run_unittest_in_docker(code, evaluacion_id)
+    # from functions.containers import run_unittest_in_docker
+    # return run_unittest_in_docker(code, evaluacion_id)
+    return {"message": "Funcionalidad pendiente de implementación"}
 
 @router.post("/run-code/")
 async def run_code(code: str = Form(...)):
     from functions.containers import run_code_in_docker
     return run_code_in_docker(code)
+
+@router.post("/run-tarea-test/")
+async def run_test(code: str = Form(...), tarea_id: int = Form(...)):
+    from functions.containers import run_tarea_unittest_in_docker
+    return run_tarea_unittest_in_docker(code, tarea_id)
+
+@router.post("/run-evaluacion-test/")
+async def run_evaluacion_test(code: str = Form(...), evaluacion_id: int = Form(...)):
+    from functions.containers import run_evaluacion_unittest_in_docker
+    return run_evaluacion_unittest_in_docker(code, evaluacion_id)

@@ -23,7 +23,7 @@ def get_tarea_by_id(tarea_id: int):
 def get_tarea_test(tarea_id: int):
     response = (
         supabaseClient.table("tarea")
-        .select("tests")
+        .select("test")
         .eq("id", tarea_id)
         .execute()
     )

@@ -24,7 +24,7 @@ def get_evaluacion_by_id(evaluacion_id: int):
 def get_evaluacion_test(evaluacion_id: int):
     response = (
         supabaseClient.table("evaluacion")
-        .select("tests")
+        .select("test")
         .eq("id", evaluacion_id)
         .execute()
     )

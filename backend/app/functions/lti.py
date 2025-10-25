@@ -124,7 +124,6 @@ def register_lti_launch(
         
         user_id = user.get('id')
         
-        # Verificar/Registrar Enrolación
         is_enrolled = get_user_in_course(user_id, course_id)
         if not is_enrolled:
             enrollment = enroll_user_in_course(user_id, course_id)

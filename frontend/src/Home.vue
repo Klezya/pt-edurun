@@ -1,10 +1,14 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { getUserInfo, getCourseInfo, getPlatformInfo } from './lti/services/info'
-import { registerInstance } from './lti/services/lti_fastapi'
-import { getRol } from './lti/interfaces/roles'
-import type { UserInfo, CourseInfo, PlatformInfo } from './lti/interfaces/info'
+
+// LTI Info Services
+import { getUserInfo, getCourseInfo, getPlatformInfo, getRol } from '@/features/lti_protocol'
+import type { UserInfo, CourseInfo, PlatformInfo } from '@/features/lti_protocol'
+
+// Platform Management
+import { registerInstance } from '@/features/platform_management'
+
 
 const router = useRouter()
 const loadingData = ref(true)
@@ -14,22 +18,9 @@ const platformInfo = ref<PlatformInfo | null>(null)
 const role = ref<string | null>(null)
 const error = ref<string | null>(null)
 
-// Función para navegar a tareas según el rol
-const navigateToTareas = () => {
-    // Navegar según el rol
-  if (role.value === 'docente') {
-    router.push({ name: 'tareas-docente' })
-  } else if (role.value === 'estudiante') {
-    router.push({ name: 'tareas-estudiante' })
-  } else {
-    // Si no hay rol, navega a la ruta genérica
-    router.push({ name: 'tareas' })
-  }
-}
 
 onMounted(async () => {
   console.log('Cargando información del usuario y curso...')
-  // Lee "ltik" de la URL y guárdalo para las peticiones
   const urlParams = new URLSearchParams(window.location.search)
   const ltik = urlParams.get('ltik')
   if (ltik) {
@@ -50,6 +41,7 @@ onMounted(async () => {
     loadingData.value = false
   }
 
+  console.log('Intentando registrar la instancia...')
   try {
     // Registrar la instancia en el backend antes de navegar
     if (userInfo.value && courseInfo.value && platformInfo.value) {
@@ -68,7 +60,6 @@ onMounted(async () => {
     }
   } catch (e) {
     console.error('Error al registrar la instancia:', e)
-    // Continuar con la navegación incluso si hay error
   }
 })
 </script>
@@ -98,26 +89,14 @@ onMounted(async () => {
             </div>
             <nav class="hidden md:block">
               <div class="flex items-center space-x-2">
-                <button 
-                  @click="navigateToTareas"
-                  class="rounded-lg px-4 py-2.5 text-sm font-medium text-slate-200 hover:bg-white/10 hover:text-white transition-all duration-200 hover:scale-105 cursor-pointer">
-                  <span class="flex items-center gap-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                    </svg>
-                    Tareas
-                  </span>
-                </button>
-              </div>
-              <div class="hidden md:block w-px h-6 bg-white/10 mx-4">
                 <RouterLink 
-                  to="/testendpoint" 
+                  :to="{ name: 'actividades' }"
                   class="rounded-lg px-4 py-2.5 text-sm font-medium text-slate-200 hover:bg-white/10 hover:text-white transition-all duration-200 hover:scale-105">
                   <span class="flex items-center gap-2">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
                     </svg>
-                    testEndpoint
+                    Actividades
                   </span>
                 </RouterLink>
               </div>
