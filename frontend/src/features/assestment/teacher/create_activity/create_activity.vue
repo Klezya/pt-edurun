@@ -27,31 +27,10 @@ const successMessage = ref('')
 const editorContainer = ref<HTMLElement | null>(null)
 let editorView: EditorView | null = null
 
-const defaultPytestCode = `# Ejemplo de prueba para una función suma
-# Importante importar la funcion esperada
-from app import suma
-
-def test_suma_basica():
-    """Prueba básica de la función suma"""
-    assert suma(2, 3) == 5
-    assert suma(0, 0) == 0
-    assert suma(-1, 1) == 0
-
-def test_suma_negativos():
-    """Prueba con números negativos"""
-    assert suma(-5, -3) == -8
-    assert suma(-10, 5) == -5
-
-def test_suma_decimales():
-    """Prueba con números decimales"""
-    assert suma(2.5, 3.5) == 6.0
-    assert suma(0.1, 0.2) == 0.3
-`
-
 onMounted(() => {
   if (editorContainer.value) {
     editorView = new EditorView({
-      doc: formData.value.test || defaultPytestCode,
+      doc: formData.value.test || '',
       extensions: [
         basicSetup,
         python(),
@@ -66,10 +45,6 @@ onMounted(() => {
     })
   }
 })
-
-if (!formData.value.test) {
-  formData.value.test = defaultPytestCode
-}
 
 const handleSubmit = async () => {
   errorMessage.value = ''
@@ -281,8 +256,8 @@ const handleCancel = () => {
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                       </svg>
                       <span>
-                        Escriba el código de prueba que se ejecutará para evaluar las entregas de los estudiantes.
-                        El código debe incluir funciones con el mismo nombre que las funciones a evaluar, en este caso se evaluara la funcion <code class="px-1 py-0.5 bg-slate-800 rounded text-sky-400">suma()</code>
+                        Escriba el código de prueba Pytest que se ejecutará para evaluar las entregas de los estudiantes.
+                        Deje vacío si no requiere pruebas automatizadas.
                       </span>
                     </p>
                     

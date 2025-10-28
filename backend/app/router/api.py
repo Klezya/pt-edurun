@@ -2,8 +2,8 @@ from fastapi import APIRouter
 
 # Funciones para manejar los endpoints
 from fastapi import Form
-from models.evaluacion import Evaluacion
-from models.tarea import Tarea
+from models.evaluacion import Evaluacion, EvaluacionUpdate
+from models.tarea import Tarea, TareaUpdate
 
 router = APIRouter()
 
@@ -29,6 +29,12 @@ async def create_evaluacion(evaluacion: Evaluacion):
     response = create_evaluacion(evaluacion)
     return response
 
+@router.put("/evaluacion/{evaluacion_id}")
+async def update_evaluacion(evaluacion_id: int, evaluacion: EvaluacionUpdate):
+    from functions.evaluaciones import update_evaluacion
+    response = update_evaluacion(evaluacion_id, evaluacion)
+    return response
+
 # tareas
 
 @router.get("/tareas/{course_id_lms}")
@@ -47,13 +53,18 @@ async def create_tarea(tarea: Tarea):
     response = create_tarea(tarea)
     return response
 
-# pendings
+@router.put("/tarea/{tarea_id}")
+async def update_tarea(tarea_id: int, tarea: TareaUpdate):
+    from functions.tareas import update_tarea
+    response = update_tarea(tarea_id, tarea)
+    return response
+
+# Containers endpoints
 
 @router.post("/send-code/")
 async def send_code(code: str = Form(...), evaluacion_id: int = Form(...)):
-    # from functions.containers import run_unittest_in_docker
-    # return run_unittest_in_docker(code, evaluacion_id)
-    return {"message": "Funcionalidad pendiente de implementación"}
+    from functions.containers import evaluate_activity
+    return evaluate_activity(code, evaluacion_id)
 
 @router.post("/run-code/")
 async def run_code(code: str = Form(...)):

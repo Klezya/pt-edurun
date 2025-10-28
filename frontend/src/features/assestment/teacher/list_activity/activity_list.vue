@@ -38,27 +38,19 @@ onMounted(async () => {
 })
 
 function verDetallesEvaluacion(actividad: Actividad) {
-  // TODO: Implementar vista de detalles de la evaluación
-  console.log('Ver detalles de evaluación:', actividad.id)
-  // router.push({ name: 'evaluacion-detalles', params: { id: actividad.id } })
+  router.push({ name: 'actividad-detalles', params: { id: actividad.id, tipo: 'evaluacion' } })
 }
 
 function editarEvaluacion(actividad: Actividad) {
-  // TODO: Implementar edición de evaluación
-  console.log('Editar evaluación:', actividad.id)
-  // router.push({ name: 'evaluacion-editar', params: { id: actividad.id } })
+  router.push({ name: 'actividad-editar', params: { id: actividad.id, tipo: 'evaluacion' } })
 }
 
 function verDetallesTarea(actividad: Actividad) {
-  // TODO: Implementar vista de detalles de la tarea
-  console.log('Ver detalles de tarea:', actividad.id)
-  // router.push({ name: 'tarea-detalles', params: { id: actividad.id } })
+  router.push({ name: 'actividad-detalles', params: { id: actividad.id, tipo: 'tarea' } })
 }
 
 function editarTarea(actividad: Actividad) {
-  // TODO: Implementar edición de tarea
-  console.log('Editar tarea:', actividad.id)
-  // router.push({ name: 'tarea-editar', params: { id: tarea.id } })
+  router.push({ name: 'actividad-editar', params: { id: actividad.id, tipo: 'tarea' } })
 }
 
 function crearActividad() {

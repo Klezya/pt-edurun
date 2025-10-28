@@ -30,11 +30,6 @@ print("Hola mundo")\n
 const consoleText = ref('')
 const isErrorInTerminal = ref(false)
 
-// Estado para el calificador
-const gradeValue = ref<number>(0)
-const isSendingGrade = ref(false)
-const gradeMessage = ref('')
-
 const codeMirrorContainer = ref<HTMLDivElement | null>(null)
 let view: EditorView | null = null
 
@@ -123,11 +118,30 @@ async function correrTests() {
 
 async function enviar() {
   if (isCodeRunning.value) return
+  isCodeRunning.value = true
+  
   try {
     const res = await sendCode(textCode.value, evaluacion.value?.id as number)
 
+    if (!res.ok) {
+      console.log('Error en la respuesta de /send-code/:', res.statusText)
+      consoleText.value = 'Error al enviar el código'
+      isErrorInTerminal.value = true
+      return
+    }
+
     const data = await res.json()
     console.log('Respuesta de /send-code/:', data)
+
+    if (data.return_code === 0 && data.score !== undefined) {
+      const gradeRes = await sendGrade(data.score)
+      if (gradeRes.ok) {
+        console.log('Nota enviada:', data.score)
+      } else {
+        console.error('Error al enviar la nota:', gradeRes.statusText)
+      }
+    }
+    
     if (data.stderr) {
       consoleText.value = data.stderr
       isErrorInTerminal.value = true
@@ -137,37 +151,10 @@ async function enviar() {
     }
   } catch (e) {
     console.log('Error al enviar el código:', e)
-  }
-}
-
-async function enviarCalificacion() {
-  if (isSendingGrade.value) return
-  if (gradeValue.value < 0 || gradeValue.value > 100) {
-    gradeMessage.value = 'La nota debe estar entre 0 y 100'
-    return
-  }
-  
-  isSendingGrade.value = true
-  gradeMessage.value = ''
-  
-  try {
-    const res = await sendGrade(gradeValue.value)
-    
-    if (res.ok) {
-      gradeMessage.value = 'Nota enviada correctamente'
-      console.log('Nota enviada:', gradeValue.value)
-    } else {
-      gradeMessage.value = 'Error al enviar la nota'
-      console.error('Error en la respuesta:', res.statusText)
-    }
-  } catch (e) {
-    console.error('Error al enviar la calificación:', e)
-    gradeMessage.value = 'Error al enviar la nota'
+    consoleText.value = 'Error al conectar con el servidor'
+    isErrorInTerminal.value = true
   } finally {
-    isSendingGrade.value = false
-    setTimeout(() => {
-      gradeMessage.value = ''
-    }, 3000)
+    isCodeRunning.value = false
   }
 }
 
@@ -261,44 +248,6 @@ onBeforeUnmount(() => {
                 <p v-if="evaluacion" class="text-sm text-slate-400">{{ evaluacion.titulo }}</p>
               </div>
             </div>
-            
-            <!-- Calificador -->
-            <div class="flex items-center gap-3">
-              <div class="flex flex-col items-end gap-1">
-                <div class="flex items-center gap-2">
-                  <label for="grade-input" class="text-sm font-medium text-slate-300">Calificación:</label>
-                  <input
-                    id="grade-input"
-                    v-model.number="gradeValue"
-                    type="number"
-                    min="0"
-                    max="100"
-                    step="0.1"
-                    class="w-20 rounded-lg border border-white/20 bg-slate-900/50 px-3 py-2 text-sm text-white placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
-                    placeholder="0-100"
-                  />
-                  <button
-                    @click="enviarCalificacion"
-                    :disabled="isSendingGrade"
-                    class="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-amber-600 to-orange-700 px-4 py-2 text-white text-sm font-medium hover:from-amber-500 hover:to-orange-600 transition-all duration-200 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                    </svg>
-                    <span>{{ isSendingGrade ? 'Enviando...' : 'Enviar Nota' }}</span>
-                  </button>
-                </div>
-                <span 
-                  v-if="gradeMessage" 
-                  :class="[
-                    'text-xs transition-opacity duration-300',
-                    gradeMessage.includes('✓') ? 'text-emerald-400' : 'text-rose-400'
-                  ]"
-                >
-                  {{ gradeMessage }}
-                </span>
-              </div>
-            </div>
           </div>
         </div>
       </header>
@@ -368,14 +317,15 @@ onBeforeUnmount(() => {
                   </button>
 
                   <button
-                    class="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-700 px-4 py-2.5 text-white text-sm font-medium hover:from-emerald-500 hover:to-teal-600 transition-all duration-200 hover:scale-105 shadow-lg"
+                    class="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-700 px-4 py-2.5 text-white text-sm font-medium hover:from-emerald-500 hover:to-teal-600 transition-all duration-200 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                    :disabled="isCodeRunning"
                     @click="onEnviarClick"
                   >
                     <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <path d="M22 3L9 14"/>
                       <path d="M22 3l-7 18-3-7-7-3 17-8Z"/>
                     </svg>
-                    <span>Enviar</span>
+                    <span>{{ isCodeRunning ? 'Enviando...' : 'Enviar' }}</span>
                   </button>
                 </div>
               </div>

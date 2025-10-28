@@ -14,7 +14,7 @@ def get_tareas_by_course_lms_id(course_id_lms: str):
 def get_tarea_by_id(tarea_id: int):
     response = (
         supabaseClient.table("tarea")
-        .select("id, titulo, contenido")
+        .select("id, titulo, contenido, test")
         .eq("id", tarea_id)
         .execute()
     )
@@ -33,7 +33,7 @@ def get_tarea_test(tarea_id: int):
         return None
 
 # Metodos Post
-from models.tarea import Tarea
+from models.tarea import Tarea, TareaUpdate
 
 def create_tarea(tarea: Tarea):
     response = (
@@ -43,6 +43,17 @@ def create_tarea(tarea: Tarea):
                  "contenido": tarea.contenido,
                  "fecha_limite": tarea.fecha_limite,
                  "test": tarea.test})
+        .execute()
+    )
+    return response.data
+
+def update_tarea(tarea_id: int, tarea: TareaUpdate):
+    response = (
+        supabaseClient.table("tarea")
+        .update({"titulo": tarea.titulo,
+                 "contenido": tarea.contenido,
+                 "test": tarea.test})
+        .eq("id", tarea_id)
         .execute()
     )
     return response.data
