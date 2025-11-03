@@ -33,6 +33,10 @@ const isErrorInTerminal = ref(false)
 const codeMirrorContainer = ref<HTMLDivElement | null>(null)
 let view: EditorView | null = null
 
+const copyAttempts = ref(0)
+const pasteAttempts = ref(0)
+const cutAttempts = ref(0)
+
 // Estado del modal de confirmación
 const showConfirm = ref(false)
 function onEnviarClick() {
@@ -168,6 +172,24 @@ onMounted(() => {
   cargarEvaluacion()
 
   if (codeMirrorContainer.value && !view) {
+    const blockCopyPaste = EditorView.domEventHandlers({
+      paste: (event) => {
+        event.preventDefault()
+        pasteAttempts.value++
+        return true
+      },
+      copy: (event) => {
+        event.preventDefault()
+        copyAttempts.value++
+        return true
+      },
+      cut: (event) => {
+        event.preventDefault()
+        cutAttempts.value++
+        return true
+      },
+    })
+
     const startState = EditorState.create({
       doc: textCode.value,
       extensions: [
@@ -184,6 +206,7 @@ onMounted(() => {
         python(),
         oneDark,
         EditorView.lineWrapping,
+        blockCopyPaste,
         EditorView.updateListener.of((vu: ViewUpdate) => {
           if (vu.docChanged) {
             textCode.value = vu.state.doc.toString()
