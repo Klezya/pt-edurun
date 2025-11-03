@@ -41,7 +41,11 @@ const cutAttempts = ref(0)
 const windowBlurCount = ref(0)
 const lastBlurTime = ref<number | null>(null)
 
-// Estado del modal de confirmación
+// Estado del modal de inicio de evaluación
+const showStartModal = ref(false)
+const evaluacionIniciada = ref(false)
+
+// Estado del modal de confirmación de envío
 const showConfirm = ref(false)
 function onEnviarClick() {
   showConfirm.value = true
@@ -52,6 +56,19 @@ function cancelEnviar() {
 async function confirmEnviar() {
   showConfirm.value = false
   await enviar()
+}
+
+// Funciones del modal de inicio
+function iniciarEvaluacion() {
+  showStartModal.value = false
+  evaluacionIniciada.value = true
+  console.log('Evaluación iniciada')
+}
+
+function cancelarInicio() {
+  // Opcional: redirigir a otra página o cerrar la vista
+  console.log('Inicio de evaluación cancelado')
+  window.history.back()
 }
 
 // Manejador de cambio de ventana/pestaña
@@ -76,6 +93,8 @@ async function cargarEvaluacion() {
 
   try {
     evaluacion.value = await getEvaluacion(id) as Actividad
+    // Mostrar modal de inicio después de cargar la evaluación
+    showStartModal.value = true
   } catch (e: any) {
     console.log('Error al cargar la evaluación:', e)
   } finally {
@@ -84,7 +103,7 @@ async function cargarEvaluacion() {
 }
 
 async function run() {
-  if (isCodeRunning.value) return
+  if (isCodeRunning.value || !evaluacionIniciada.value) return
   isCodeRunning.value = true
   try {
     const res = await runCode(textCode.value)
@@ -111,7 +130,7 @@ async function run() {
 
 
 async function correrTests() {
-  if (isCodeRunning.value) return
+  if (isCodeRunning.value || !evaluacionIniciada.value) return
   isCodeRunning.value = true
   try {
     const res = await runEvaluacionTests(textCode.value, evaluacion.value?.id as number)
@@ -139,7 +158,7 @@ async function correrTests() {
 
 
 async function enviar() {
-  if (isCodeRunning.value) return
+  if (isCodeRunning.value || !evaluacionIniciada.value) return
   isCodeRunning.value = true
   
   try {
@@ -331,7 +350,17 @@ onBeforeUnmount(() => {
         <div class="flex flex-col gap-4">
           <!-- Editor Section -->
           <section class="flex flex-col gap-3">
-            <div class="rounded-2xl border border-white/10 bg-slate-950/40 backdrop-blur-md shadow-2xl p-6">
+            <div class="rounded-2xl border border-white/10 bg-slate-950/40 backdrop-blur-md shadow-2xl p-6 relative">
+              <!-- Overlay cuando no se ha iniciado -->
+              <div v-if="!evaluacionIniciada" class="absolute inset-0 bg-slate-950/70 backdrop-blur-sm rounded-2xl z-10 flex items-center justify-center">
+                <div class="text-center">
+                  <svg class="w-16 h-16 text-slate-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                  </svg>
+                  <p class="text-slate-300 font-medium">Debes iniciar la evaluación para comenzar</p>
+                </div>
+              </div>
+              
               <div class="flex items-center justify-between mb-4">
                 <div class="flex items-center gap-2">
                   <div class="bg-gradient-to-br from-sky-400 to-blue-600 p-2 rounded-lg shadow-lg">
@@ -344,7 +373,7 @@ onBeforeUnmount(() => {
                 <div class="flex items-center gap-2">
                   <button
                     class="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-sky-600 to-blue-700 px-4 py-2.5 text-white text-sm font-medium hover:from-sky-500 hover:to-blue-600 transition-all duration-200 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                    :disabled="isCodeRunning"
+                    :disabled="isCodeRunning || !evaluacionIniciada"
                     @click="run"
                   >
                     <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -355,7 +384,7 @@ onBeforeUnmount(() => {
 
                   <button
                     class="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-700 px-4 py-2.5 text-white text-sm font-medium hover:from-purple-500 hover:to-indigo-600 transition-all duration-200 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                    :disabled="isCodeRunning"
+                    :disabled="isCodeRunning || !evaluacionIniciada"
                     @click="correrTests"
                   >
                     <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -367,7 +396,7 @@ onBeforeUnmount(() => {
 
                   <button
                     class="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-700 px-4 py-2.5 text-white text-sm font-medium hover:from-emerald-500 hover:to-teal-600 transition-all duration-200 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                    :disabled="isCodeRunning"
+                    :disabled="isCodeRunning || !evaluacionIniciada"
                     @click="onEnviarClick"
                   >
                     <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -410,7 +439,75 @@ onBeforeUnmount(() => {
       </main>
     </div>
 
-    <!-- Modal de confirmación -->
+    <!-- Modal de inicio de evaluación -->
+    <div v-if="showStartModal && !loadingEvaluacion" class="fixed inset-0 z-50 flex items-center justify-center">
+      <div class="absolute inset-0 bg-slate-950/90 backdrop-blur-md"></div>
+      <div class="relative mx-4 w-full max-w-2xl rounded-2xl border border-white/10 bg-slate-950/95 backdrop-blur-md shadow-2xl p-8">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="bg-gradient-to-br from-blue-400 to-indigo-600 p-3 rounded-xl shadow-lg">
+            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <h3 class="text-2xl font-bold text-white">Comenzar Evaluación</h3>
+        </div>
+        
+        <div class="mb-6 space-y-4">
+          
+          <div class="p-5 rounded-xl bg-amber-500/10 border border-amber-500/30">
+            <div class="flex items-start gap-3">
+              <svg class="w-6 h-6 text-amber-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+              </svg>
+              <div class="flex-1">
+                <h5 class="text-base font-semibold text-amber-300 mb-2">Instrucciones importantes:</h5>
+                <ul class="space-y-2 text-sm text-amber-200/90">
+                  <li class="flex items-start gap-2">
+                    <span class="text-amber-400 font-bold">•</span>
+                    <span>No podrás copiar ni pegar código en el editor</span>
+                  </li>
+                  <li class="flex items-start gap-2">
+                    <span class="text-amber-400 font-bold">•</span>
+                    <span>Se registrarán los cambios de ventana o pestaña</span>
+                  </li>
+                  <li class="flex items-start gap-2">
+                    <span class="text-amber-400 font-bold">•</span>
+                    <span>Una vez iniciada, todas tus acciones serán monitoreadas</span>
+                  </li>
+                  <li class="flex items-start gap-2">
+                    <span class="text-amber-400 font-bold">•</span>
+                    <span>Asegúrate de estar listo antes de continuar</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="flex justify-end gap-3">
+          <button 
+            class="inline-flex items-center gap-2 rounded-lg px-5 py-3 text-sm font-medium text-slate-200 hover:bg-white/10 hover:text-white transition-all duration-200 border border-slate-700 hover:border-slate-500" 
+            @click="cancelarInicio"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+            <span>Cancelar</span>
+          </button>
+          <button 
+            class="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-700 px-5 py-3 text-white text-sm font-medium hover:from-blue-500 hover:to-indigo-600 transition-all duration-200 hover:scale-105 shadow-lg" 
+            @click="iniciarEvaluacion"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span>Estoy listo, comenzar</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de confirmación de envío -->
     <div v-if="showConfirm" class="fixed inset-0 z-50 flex items-center justify-center">
       <div class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" @click="cancelEnviar"></div>
       <div class="relative mx-4 w-full max-w-md rounded-2xl border border-white/10 bg-slate-950/90 backdrop-blur-md shadow-2xl p-6">
