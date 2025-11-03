@@ -59,6 +59,19 @@ async def update_tarea(tarea_id: int, tarea: TareaUpdate):
     response = update_tarea(tarea_id, tarea)
     return response
 
+# Delete endpoints
+@router.delete("/evaluacion/{evaluacion_id}")
+async def delete_evaluacion(evaluacion_id: int):
+    from functions.evaluaciones import delete_evaluacion
+    response = delete_evaluacion(evaluacion_id)
+    return response
+
+@router.delete("/tarea/{tarea_id}")
+async def delete_tarea(tarea_id: int):
+    from functions.tareas import delete_tarea
+    response = delete_tarea(tarea_id)
+    return response
+
 # Containers endpoints
 
 @router.post("/send-code/")

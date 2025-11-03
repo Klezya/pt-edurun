@@ -42,3 +42,31 @@ export async function updateTarea(tareaId: number, data: UpdateActivityData): Pr
 
   return response.json()
 }
+
+export async function deleteEvaluacion(evaluacionId: number): Promise<any> {
+  const response = await fetch(`${configs.apiBaseUrl}/api/evaluacion/${evaluacionId}`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' }
+  })
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: 'Error al eliminar la evaluación' }))
+    throw new Error(error.detail || 'Error al eliminar la evaluación')
+  }
+
+  return response.json()
+}
+
+export async function deleteTarea(tareaId: number): Promise<any> {
+  const response = await fetch(`${configs.apiBaseUrl}/api/tarea/${tareaId}`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' }
+  })
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: 'Error al eliminar la tarea' }))
+    throw new Error(error.detail || 'Error al eliminar la tarea')
+  }
+
+  return response.json()
+}

@@ -57,3 +57,13 @@ def update_tarea(tarea_id: int, tarea: TareaUpdate):
         .execute()
     )
     return response.data
+
+
+def delete_tarea(tarea_id: int):
+    response = (
+        supabaseClient.table("tarea")
+        .delete()
+        .eq("id", tarea_id)
+        .execute()
+    )
+    return response.data

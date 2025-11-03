@@ -58,3 +58,13 @@ def update_evaluacion(evaluacion_id: int, evaluacion: EvaluacionUpdate):
         .execute()
     )
     return response.data
+
+
+def delete_evaluacion(evaluacion_id: int):
+    response = (
+        supabaseClient.table("evaluacion")
+        .delete()
+        .eq("id", evaluacion_id)
+        .execute()
+    )
+    return response.data

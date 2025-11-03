@@ -8,7 +8,7 @@ import { python } from '@codemirror/lang-python'
 import { oneDark } from '@codemirror/theme-one-dark'
 
 // Servicios
-import { updateEvaluacion, updateTarea } from './edit_activity.service'
+import { updateEvaluacion, updateTarea, deleteEvaluacion, deleteTarea } from './edit_activity.service'
 import { getEvaluacion, getTarea } from '../../shared'
 import type { Actividad } from '../../shared/activity.types'
 
@@ -129,6 +129,40 @@ const handleCancel = () => {
   }
   
   router.push({ name: 'actividad-detalles', params: { id: activityId.value, tipo: formData.value.tipo } })
+}
+
+const handleDelete = async () => {
+  errorMessage.value = ''
+  successMessage.value = ''
+
+  const confirmed = window.confirm('¿Estás seguro de que deseas eliminar esta actividad? Esta acción no se puede deshacer.')
+  if (!confirmed) return
+
+  isSubmitting.value = true
+
+  try {
+    if (formData.value.tipo === 'evaluacion') {
+      await deleteEvaluacion(activityId.value)
+      successMessage.value = 'Evaluación eliminada exitosamente'
+    } else {
+      await deleteTarea(activityId.value)
+      successMessage.value = 'Tarea eliminada exitosamente'
+    }
+
+    if (editorView) {
+      editorView.destroy()
+    }
+
+    setTimeout(() => {
+      router.push({ name: 'actividades-docente' })
+    }, 1200)
+
+  } catch (error) {
+    console.error('Error al eliminar:', error)
+    errorMessage.value = error instanceof Error ? error.message : `Error al eliminar la ${formData.value.tipo}`
+  } finally {
+    isSubmitting.value = false
+  }
 }
 </script>
 
@@ -311,30 +345,45 @@ const handleCancel = () => {
                 </div>
 
                 <!-- Form Actions -->
-                <div class="flex items-center justify-end gap-4 pt-8 mt-8 border-t border-white/10">
-                  <button
-                    type="button"
-                    @click="handleCancel"
-                    class="rounded-lg px-6 py-3 text-sm font-medium text-slate-200 hover:bg-white/10 transition-all duration-200 hover:scale-105"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    type="submit"
-                    :disabled="isSubmitting"
-                    class="inline-flex items-center gap-2 rounded-lg px-6 py-3 text-sm font-medium text-white shadow-lg transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-                    :class="formData.tipo === 'evaluacion' 
-                      ? 'bg-gradient-to-r from-purple-500 to-blue-600 hover:shadow-purple-500/50 shadow-purple-500/30' 
-                      : 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:shadow-emerald-500/50 shadow-emerald-500/30'"
-                  >
-                    <svg v-if="isSubmitting" class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                    </svg>
-                    <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                    </svg>
-                    {{ isSubmitting ? 'Guardando...' : 'Guardar Cambios' }}
-                  </button>
+                <div class="flex items-center justify-between gap-4 pt-8 mt-8 border-t border-white/10">
+                  <div class="flex items-center gap-4">
+                    <button
+                      type="button"
+                      @click="handleDelete"
+                      :disabled="isSubmitting"
+                      class="rounded-lg px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <svg class="w-4 h-4 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M10 3h4l1 4H9l1-4z"></path>
+                      </svg>
+                      Eliminar
+                    </button>
+                  </div>
+                  <div class="flex items-center gap-4">
+                    <button
+                      type="button"
+                      @click="handleCancel"
+                      class="rounded-lg px-6 py-3 text-sm font-medium text-slate-200 hover:bg-white/10 transition-all duration-200 hover:scale-105"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="submit"
+                      :disabled="isSubmitting"
+                      class="inline-flex items-center gap-2 rounded-lg px-6 py-3 text-sm font-medium text-white shadow-lg transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                      :class="formData.tipo === 'evaluacion' 
+                        ? 'bg-gradient-to-r from-purple-500 to-blue-600 hover:shadow-purple-500/50 shadow-purple-500/30' 
+                        : 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:shadow-emerald-500/50 shadow-emerald-500/30'"
+                    >
+                      <svg v-if="isSubmitting" class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                      </svg>
+                      <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                      </svg>
+                      {{ isSubmitting ? 'Guardando...' : 'Guardar Cambios' }}
+                    </button>
+                  </div>
                 </div>
               </form>
             </div>
