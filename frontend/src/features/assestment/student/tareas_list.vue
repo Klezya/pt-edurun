@@ -51,7 +51,7 @@ function comenzar(tarea: Actividad) {
               </div>
               <div>
                 <h1 class="text-2xl font-bold bg-gradient-to-r from-sky-400 to-blue-500 bg-clip-text text-transparent">
-                  Mis Evaluaciones
+                  Mis Tareas
                 </h1>
                 <p v-if="courseName" class="text-sm text-slate-400">{{ courseName }}</p>
               </div>
