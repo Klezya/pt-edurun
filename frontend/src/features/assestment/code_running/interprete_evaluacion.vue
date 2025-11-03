@@ -37,6 +37,10 @@ const copyAttempts = ref(0)
 const pasteAttempts = ref(0)
 const cutAttempts = ref(0)
 
+// Contador de cambios de ventana/pestaña
+const windowBlurCount = ref(0)
+const lastBlurTime = ref<number | null>(null)
+
 // Estado del modal de confirmación
 const showConfirm = ref(false)
 function onEnviarClick() {
@@ -48,6 +52,20 @@ function cancelEnviar() {
 async function confirmEnviar() {
   showConfirm.value = false
   await enviar()
+}
+
+// Manejador de cambio de ventana/pestaña
+function handleWindowBlur() {
+  windowBlurCount.value++
+  lastBlurTime.value = Date.now()
+  console.log(`Cambio de ventana detectado. Total: ${windowBlurCount.value}`)
+}
+
+function handleWindowFocus() {
+  if (lastBlurTime.value) {
+    const timeAway = Math.round((Date.now() - lastBlurTime.value) / 1000)
+    console.log(`Usuario regresó después de ${timeAway} segundos`)
+  }
 }
 
 async function cargarEvaluacion() {
@@ -171,6 +189,10 @@ onMounted(() => {
   
   cargarEvaluacion()
 
+  // Agregar listeners para detectar cambios de ventana
+  window.addEventListener('blur', handleWindowBlur)
+  window.addEventListener('focus', handleWindowFocus)
+
   if (codeMirrorContainer.value && !view) {
     const blockCopyPaste = EditorView.domEventHandlers({
       paste: (event) => {
@@ -241,6 +263,10 @@ onBeforeUnmount(() => {
     view.destroy()
     view = null
   }
+  
+  // Limpiar listeners de ventana
+  window.removeEventListener('blur', handleWindowBlur)
+  window.removeEventListener('focus', handleWindowFocus)
 })
 </script>
 
