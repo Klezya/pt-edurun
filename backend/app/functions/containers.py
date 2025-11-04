@@ -190,7 +190,6 @@ def evaluate_activity(code: str, evaluacion_id: int):
     # Extraer el puntaje del output
     score = 0
     
-    # Buscar "Puntaje obtenido: XX%"
     score_match = re.search(r'Puntaje obtenido: (\d+)%', output)
     if score_match:
         score = int(score_match.group(1))

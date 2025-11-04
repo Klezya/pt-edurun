@@ -6,7 +6,8 @@ import { useRoute } from 'vue-router'
 // Servicios y tipos
 import { getEvaluacion } from '../shared'
 import type { Actividad } from '../shared/activity.types'
-import { runCode, sendCode, sendGrade, runEvaluacionTests } from './code.service'
+import { runCode, sendCode, sendGrade, runEvaluacionTests, submitEvaluacion } from './code.service'
+import { getUserInfo } from '@/features/lti_protocol'
 
 // CodeMirror imports
 import { EditorState } from '@codemirror/state'
@@ -177,11 +178,42 @@ async function enviar() {
     console.log('Respuesta de /send-code/:', data)
 
     if (data.return_code === 0 && data.score !== undefined) {
+      // Enviar nota al LMS
       const gradeRes = await sendGrade(data.score, assessment_id)
       if (gradeRes.ok) {
-        console.log('Nota enviada:', data.score)
+        console.log('Nota enviada al LMS:', data.score)
       } else {
-        console.error('Error al enviar la nota:', gradeRes.statusText)
+        console.error('Error al enviar la nota al LMS:', gradeRes.statusText)
+      }
+
+      // Registrar entrega en la base de datos
+      try {
+        const userInfo = await getUserInfo()
+        
+        const entregaData = {
+          id_evaluacion: evaluacion.value?.id as number,
+          id_alumno: userInfo.userId,
+          nota: data.score,
+          codigo: textCode.value,
+          detalles: {
+            intentos_copiar: copyAttempts.value,
+            intentos_pegar: pasteAttempts.value,
+            intentos_cortar: cutAttempts.value,
+            cambios_ventana: windowBlurCount.value,
+            timestamp: new Date().toISOString(),
+          }
+        }
+        
+        await submitEvaluacion(entregaData)
+        console.log('Entrega registrada en la base de datos')
+        
+        consoleText.value = `✅ Evaluación enviada exitosamente!\n\nPuntaje obtenido: ${data.score}%\n\n${data.stdout}`
+        isErrorInTerminal.value = false
+      } catch (submitError) {
+        console.error('Error al registrar la entrega:', submitError)
+        // Aunque falle el registro, mostramos el resultado de los tests
+        consoleText.value = `⚠️ Evaluación procesada (nota: ${data.score}%), pero hubo un problema al registrar la entrega.\n\n${data.stdout}`
+        isErrorInTerminal.value = false
       }
     }
     

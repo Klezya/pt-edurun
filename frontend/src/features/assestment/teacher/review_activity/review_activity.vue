@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { getEntregaEvaluacion} from './review_activity.service'
+import type { EntregaEvaluacionResponse } from './review_activity.types'
 
 const route = useRoute()
 const router = useRouter()
@@ -8,18 +10,36 @@ const router = useRouter()
 const userId = ref<string>('')
 const assessmentId = ref<string>('')
 const loading = ref(true)
+const entregaData = ref<EntregaEvaluacionResponse | null>(null)
+const errorMessage = ref<string>('')
 
 onMounted(async () => {
   try {
-    // Obtener user_id de los parámetros de la URL
+    // Obtener user_id y assessment_id de los parámetros de la URL
     userId.value = route.query.user_id as string || ''
     assessmentId.value = route.query.assessment_id as string || ''
     
     if (!userId.value) {
       console.warn('No se encontró user_id en los parámetros de URL')
+      errorMessage.value = 'No se encontró el ID del usuario'
+      return
+    }
+
+    if (!assessmentId.value) {
+      console.warn('No se encontró assessment_id en los parámetros de URL')
+      errorMessage.value = 'No se encontró el ID de la evaluación'
+      return
+    }
+
+    // Llamar al servicio para obtener la entrega
+    entregaData.value = await getEntregaEvaluacion(userId.value, parseInt(assessmentId.value))
+    
+    if (!entregaData.value) {
+      errorMessage.value = 'No se encontró ninguna entrega para este estudiante'
     }
   } catch (error) {
     console.error('Error al cargar la información:', error)
+    errorMessage.value = error instanceof Error ? error.message : 'Error al cargar la información de la entrega'
   } finally {
     loading.value = false
   }
@@ -40,12 +60,12 @@ function handleVolver() {
 
     <div class="relative flex min-h-screen flex-col">
       <!-- Header -->
-      <header class="border-b border-white/10 bg-slate-950/30 backdrop-blur-sm">
-        <div class="mx-auto max-w-7xl px-4 py-6">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-4">
-              <div class="bg-gradient-to-br from-purple-500/20 to-blue-600/20 p-3 rounded-xl">
-                <svg class="w-8 h-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <header class="border-b border-white/10 bg-slate-950/30 backdrop-blur-sm shadow-lg">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div class="flex h-20 items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="bg-gradient-to-br from-purple-400 to-blue-600 p-2 rounded-xl shadow-lg">
+                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                 </svg>
               </div>
@@ -75,18 +95,34 @@ function handleVolver() {
       <main class="flex flex-grow items-start justify-center px-4 py-8">
         <div class="mx-auto max-w-7xl w-full">
           <!-- Loading State -->
-          <div v-if="loading" class="rounded-2xl border border-white/10 bg-slate-950/40 backdrop-blur-md shadow-2xl overflow-hidden">
-            <div class="p-8">
-              <div class="animate-pulse space-y-6">
-                <div class="h-8 w-2/3 rounded bg-slate-700/50"></div>
-                <div class="h-4 w-40 rounded bg-slate-800/50"></div>
+          <div v-if="loading" class="space-y-6">
+            <div class="rounded-2xl border border-white/10 bg-slate-950/40 backdrop-blur-md shadow-2xl overflow-hidden">
+              <div class="p-8 animate-pulse">
+                <div class="h-6 w-48 bg-slate-700/50 rounded mb-4"></div>
+                <div class="space-y-3">
+                  <div class="h-4 w-full bg-slate-700/50 rounded"></div>
+                  <div class="h-4 w-3/4 bg-slate-700/50 rounded"></div>
+                </div>
               </div>
+            </div>
+          </div>
+
+          <!-- Error State -->
+          <div v-else-if="errorMessage" class="rounded-2xl border border-red-500/20 bg-slate-950/40 backdrop-blur-md shadow-2xl overflow-hidden">
+            <div class="p-8 text-center">
+              <div class="mx-auto w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center mb-4">
+                <svg class="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </div>
+              <h3 class="text-xl font-bold text-white mb-2">Error</h3>
+              <p class="text-slate-400">{{ errorMessage }}</p>
             </div>
           </div>
 
           <!-- Content -->
           <div v-else class="space-y-6">
-            <!-- User ID Card -->
+            <!-- Información del Estudiante -->
             <div class="rounded-2xl border border-white/10 bg-slate-950/40 backdrop-blur-md shadow-2xl overflow-hidden">
               <div class="p-8">
                 <div class="flex items-center gap-3 mb-6 pb-4 border-b border-white/10">
@@ -110,39 +146,82 @@ function handleVolver() {
                       {{ assessmentId }}
                     </span>
                   </div>
-                  <div v-else class="flex items-center gap-3 p-4 rounded-lg bg-amber-500/10 border border-amber-500/20">
-                    <svg class="w-6 h-6 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                    </svg>
-                    <div>
-                      <h4 class="text-lg font-semibold text-amber-300 mb-1">ID de usuario no encontrado</h4>
-                      <p class="text-amber-200/80 text-sm">
-                        No se encontró el parámetro user_id en la URL
-                      </p>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
 
-            <!-- Review Message Card -->
-            <div class="rounded-2xl border border-white/10 bg-slate-950/40 backdrop-blur-md shadow-2xl overflow-hidden">
-              <div class="p-8">
-                <div class="flex items-center gap-3 mb-6 pb-4 border-b border-white/10">
-                  <div class="bg-gradient-to-br from-green-500/20 to-emerald-600/20 p-2 rounded-lg">
-                    <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
+            <!-- Información de la Entrega -->
+            <div v-if="entregaData" class="space-y-6">
+              <!-- Nota obtenida -->
+              <div class="rounded-2xl border border-white/10 bg-slate-950/40 backdrop-blur-md shadow-2xl overflow-hidden">
+                <div class="p-8">
+                  <div class="flex items-center gap-3 mb-6 pb-4 border-b border-white/10">
+                    <div class="bg-gradient-to-br from-emerald-500/20 to-teal-600/20 p-2 rounded-lg">
+                      <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                      </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-white">Resultado de la Evaluación</h3>
                   </div>
-                  <h3 class="text-xl font-bold text-white">Estado de Revisión</h3>
+                  <div class="text-center py-6">
+                    <p class="text-sm text-slate-400 mb-2">Nota obtenida</p>
+                    <p class="text-6xl font-bold bg-gradient-to-r from-emerald-400 to-teal-500 bg-clip-text text-transparent">
+                      {{ entregaData.nota }}%
+                    </p>
+                  </div>
                 </div>
-                <div class="text-center py-8">
-                  <p class="text-2xl font-semibold text-slate-200">
-                    🎓 Estás revisando la evaluación
-                  </p>
-                  <p class="text-slate-400 mt-2">
-                    La funcionalidad de revisión completa estará disponible próximamente
-                  </p>
+              </div>
+
+              <!-- Código enviado -->
+              <div v-if="entregaData.codigo" class="rounded-2xl border border-white/10 bg-slate-950/40 backdrop-blur-md shadow-2xl overflow-hidden">
+                <div class="p-8">
+                  <div class="flex items-center gap-3 mb-6 pb-4 border-b border-white/10">
+                    <div class="bg-gradient-to-br from-purple-500/20 to-blue-600/20 p-2 rounded-lg">
+                      <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+                      </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-white">Código Enviado</h3>
+                  </div>
+                  <div class="rounded-lg bg-slate-900/50 border border-white/10 overflow-hidden">
+                    <pre class="p-4 overflow-x-auto text-sm text-slate-300 font-mono"><code>{{ entregaData.codigo }}</code></pre>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Detalles de la entrega -->
+              <div v-if="entregaData.detalles" class="rounded-2xl border border-white/10 bg-slate-950/40 backdrop-blur-md shadow-2xl overflow-hidden">
+                <div class="p-8">
+                  <div class="flex items-center gap-3 mb-6 pb-4 border-b border-white/10">
+                    <div class="bg-gradient-to-br from-amber-500/20 to-orange-600/20 p-2 rounded-lg">
+                      <svg class="w-6 h-6 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                      </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-white">Estadísticas de Comportamiento</h3>
+                  </div>
+                  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="p-4 rounded-lg bg-slate-900/50 border border-white/10">
+                      <p class="text-xs text-slate-400 mb-1">Intentos de copiar</p>
+                      <p class="text-2xl font-bold text-white">{{ entregaData.detalles.intentos_copiar }}</p>
+                    </div>
+                    <div class="p-4 rounded-lg bg-slate-900/50 border border-white/10">
+                      <p class="text-xs text-slate-400 mb-1">Intentos de pegar</p>
+                      <p class="text-2xl font-bold text-white">{{ entregaData.detalles.intentos_pegar }}</p>
+                    </div>
+                    <div class="p-4 rounded-lg bg-slate-900/50 border border-white/10">
+                      <p class="text-xs text-slate-400 mb-1">Intentos de cortar</p>
+                      <p class="text-2xl font-bold text-white">{{ entregaData.detalles.intentos_cortar }}</p>
+                    </div>
+                    <div class="p-4 rounded-lg bg-slate-900/50 border border-white/10">
+                      <p class="text-xs text-slate-400 mb-1">Cambios de ventana</p>
+                      <p class="text-2xl font-bold text-white">{{ entregaData.detalles.cambios_ventana }}</p>
+                    </div>
+                  </div>
+                  <div v-if="entregaData.detalles.timestamp" class="mt-4 p-4 rounded-lg bg-slate-900/50 border border-white/10">
+                    <p class="text-xs text-slate-400 mb-1">Fecha y hora de entrega</p>
+                    <p class="text-sm text-white font-mono">{{ new Date(entregaData.detalles.timestamp).toLocaleString('es-ES') }}</p>
+                  </div>
                 </div>
               </div>
             </div>

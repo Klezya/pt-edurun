@@ -13,3 +13,10 @@ class EvaluacionUpdate(BaseModel):
     titulo: str
     contenido: str
     test: Optional[str] = None        
+
+class EntregaEvaluacion(BaseModel):
+    id_evaluacion: int
+    id_alumno: str
+    nota: int
+    codigo: Optional[str] = None
+    detalles: Optional[dict] = None

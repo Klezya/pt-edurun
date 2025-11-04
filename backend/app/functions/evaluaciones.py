@@ -68,3 +68,37 @@ def delete_evaluacion(evaluacion_id: int):
         .execute()
     )
     return response.data
+
+from models.evaluacion import EntregaEvaluacion
+
+def create_entrega_evaluacion(entrega_data: EntregaEvaluacion):
+    print(entrega_data)
+    from functions.lti import get_user_id_by_lms_id
+    user = get_user_id_by_lms_id(entrega_data.id_alumno)
+    user_id = user.get("id")
+    response = (
+        supabaseClient.table("entrega_evaluacion")
+        .insert({"id_evaluacion": entrega_data.id_evaluacion,
+                 "id_alumno": user_id,
+                 "nota": entrega_data.nota,
+                 "codigo": entrega_data.codigo,
+                 "detalles": entrega_data.detalles})
+        .execute()
+    )
+    return response.data
+
+def get_entrega_evaluacion(user_id_lms: str, evaluacion_id: int):
+    from functions.lti import get_user_id_by_lms_id
+    user = get_user_id_by_lms_id(user_id_lms)
+    user_id = user.get("id")
+    response = (
+        supabaseClient.table("entrega_evaluacion")
+        .select("*")
+        .eq("id_alumno", user_id)
+        .eq("id_evaluacion", evaluacion_id)
+        .execute()
+    )
+    if response.data:
+        return response.data[0]
+    else:
+        return None

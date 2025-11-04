@@ -1,3 +1,4 @@
+import type { EntregaEvaluacionData } from '@/features/assestment/code_running/code.types'
 import configs from '@/core/configs'
 
 export async function runCode(code: string): Promise<Response> {
@@ -60,4 +61,21 @@ export async function runEvaluacionTests(code: string, evaluacionId: number): Pr
         body: data,
     })
     return res
+}
+
+export async function submitEvaluacion(data: EntregaEvaluacionData): Promise<Response> {
+    const response = await fetch(`${configs.apiBaseUrl}/api/evaluacion/entrega/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    
+    if (!response.ok) {
+        const error = await response.json().catch(() => ({ detail: 'Error al enviar la evaluación' }))
+        throw new Error(error.detail || 'Error al enviar la evaluación')
+    }
+    
+    return response
 }
