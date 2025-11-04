@@ -23,7 +23,7 @@ export async function sendCode(code: string, evaluacionId: number): Promise<Resp
     return res
 }
 
-export async function sendGrade(grade: number) {
+export async function sendGrade(grade: number, assessmentId: number) {
   const ltik = sessionStorage.getItem('ltik')
   if (!ltik) throw new Error('Token LTI (ltik) no disponible')
 
@@ -33,7 +33,7 @@ export async function sendGrade(grade: number) {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${ltik}`,
         },
-        body: JSON.stringify({ grade }),
+        body: JSON.stringify({ grade, assessmentId }),
     })
   return res
 }

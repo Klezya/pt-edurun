@@ -4,20 +4,27 @@ const path = require('path')
 // Requiring Ltijs
 const lti = require('ltijs').Provider
 
+const Url = 'https://nxnp7o-ip-201-187-231-53.tunnelmole.net'
+
 // Grading route
 router.post('/grade', async (req, res) => {
   try {
     const idtoken = res.locals.token // IdToken
     const score = req.body.grade // User numeric score sent in the body
+    const assessment_id = req.body.assessmentId
     // Creating Grade object
     const gradeObj = {
       userId: idtoken.user,
       scoreGiven: score,
       scoreMaximum: 100,
       activityProgress: 'Completed',
-      gradingProgress: 'FullyGraded'
+      gradingProgress: 'FullyGraded',
+      'https://canvas.instructure.com/lti/submission': {
+        submission_type: 'basic_lti_launch',
+        submission_data: `${Url}?type=review&user_id=${idtoken.user}&assessment_id=${assessment_id}`,
+        submitted_at: new Date().toISOString()
+      }
     }
-    console.log('IdToken info:', idtoken.platformContext.endpoint)
     // Selecting linetItem ID
     let lineItemId = idtoken.platformContext.endpoint.lineitem // Attempting to retrieve it from idtoken
     if (!lineItemId) {
@@ -51,7 +58,7 @@ router.get('/members', async (req, res) => {
   try {
     const result = await lti.NamesAndRoles.getMembers(res.locals.token)
     if (result) return res.send(result.members)
-    return res.sendStatus(500)
+      return res.sendStatus(500)
   } catch (err) {
     console.log(err.message)
     return res.status(500).send(err.message)

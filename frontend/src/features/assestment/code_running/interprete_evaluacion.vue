@@ -158,6 +158,8 @@ async function correrTests() {
 
 
 async function enviar() {
+  const assessment_id = Number(route.params.id)
+
   if (isCodeRunning.value || !evaluacionIniciada.value) return
   isCodeRunning.value = true
   
@@ -175,7 +177,7 @@ async function enviar() {
     console.log('Respuesta de /send-code/:', data)
 
     if (data.return_code === 0 && data.score !== undefined) {
-      const gradeRes = await sendGrade(data.score)
+      const gradeRes = await sendGrade(data.score, assessment_id)
       if (gradeRes.ok) {
         console.log('Nota enviada:', data.score)
       } else {

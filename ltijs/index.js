@@ -24,15 +24,30 @@ lti.setup(process.env.LTI_KEY,
 
 // When receiving successful LTI launch redirects to app
 lti.onConnect(async (token, req, res) => {
+  
   const ltik = res.locals.ltik;
-  if (token.platformContext?.custom.value === undefined) {
-    const redirectUrl = `${frontendUrl}/?ltik=${ltik}`;
+  const type = req.query.type;
+  
+  const redirectUrl = `${frontendUrl}/?ltik=${ltik}`;
+  
+  if (!type) {
+    if (token.platformContext?.custom.value === undefined) {
+      const redirectUrl = `${frontendUrl}/?ltik=${ltik}`;
+      return res.redirect(redirectUrl);
+    }
+    
+    const evaluacionId = token.platformContext.custom.value;
+    const redirectUrl = `${frontendUrl}/estudiante/evaluacion/${evaluacionId}/?ltik=${ltik}`;
+    return res.redirect(redirectUrl);  
+  }
+
+  if (type === 'review') {
+    const user_id = req.query.user_id;
+    const assessment_id = req.query.assessment_id;
+    const redirectUrl = `${frontendUrl}/docente/review/?ltik=${ltik}&user_id=${user_id}&assessment_id=${assessment_id}`;
     return res.redirect(redirectUrl);
   }
-  
-  const evaluacionId = token.platformContext.custom.value;
-  const redirectUrl = `${frontendUrl}/estudiante/evaluacion/${evaluacionId}/?ltik=${ltik}`;
-  
+
   return res.redirect(redirectUrl);
 })
 

@@ -13,6 +13,11 @@ export const assestmentsRoutes = [
         name: 'evaluacion',
         component: { template: '<div></div>' },
         beforeEnter: evaluacionGuard
+    },
+    {
+        path: '/members',
+        name: 'members',
+        component: () => import('@/features/assestment/teacher/test/members.vue'),
     }
 ]
 
@@ -63,5 +68,10 @@ export const teacherRoutes = [
         path: '/docente/crear_actividad', 
         name: 'crear-actividad', 
         component: () => import('@/features/assestment/teacher/create_activity/create_activity.vue'),
+    },
+    {
+        path: '/docente/review/',
+        name: 'revisar-evaluaciones',
+        component: () => import('@/features/assestment/teacher/review_activity/review_activity.vue'),
     }
 ]
