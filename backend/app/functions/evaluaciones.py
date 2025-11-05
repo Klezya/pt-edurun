@@ -72,7 +72,6 @@ def delete_evaluacion(evaluacion_id: int):
 from models.evaluacion import EntregaEvaluacion
 
 def create_entrega_evaluacion(entrega_data: EntregaEvaluacion):
-    print(entrega_data)
     from functions.lti import get_user_id_by_lms_id
     user = get_user_id_by_lms_id(entrega_data.id_alumno)
     user_id = user.get("id")
@@ -83,6 +82,21 @@ def create_entrega_evaluacion(entrega_data: EntregaEvaluacion):
                  "nota": entrega_data.nota,
                  "codigo": entrega_data.codigo,
                  "detalles": entrega_data.detalles})
+        .execute()
+    )
+    return response.data
+
+def update_entrega_evaluacion(entrega_data: EntregaEvaluacion):
+    from functions.lti import get_user_id_by_lms_id
+    user = get_user_id_by_lms_id(entrega_data.id_alumno)
+    user_id = user.get("id")
+    response = (
+        supabaseClient.table("entrega_evaluacion")
+        .update({"nota": entrega_data.nota,
+                 "codigo": entrega_data.codigo,
+                 "detalles": entrega_data.detalles})
+        .eq("id_alumno", user_id)
+        .eq("id_evaluacion", entrega_data.id_evaluacion)
         .execute()
     )
     return response.data
@@ -102,3 +116,10 @@ def get_entrega_evaluacion(user_id_lms: str, evaluacion_id: int):
         return response.data[0]
     else:
         return None
+
+def create_or_update_entrega_evaluacion(entrega_data: EntregaEvaluacion):
+    existing_entrega = get_entrega_evaluacion(entrega_data.id_alumno, entrega_data.id_evaluacion)
+    if existing_entrega:
+        return update_entrega_evaluacion(entrega_data)
+    else:
+        return create_entrega_evaluacion(entrega_data)

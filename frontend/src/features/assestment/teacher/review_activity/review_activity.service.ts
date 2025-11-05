@@ -2,29 +2,19 @@ import configs from '@/core/configs'
 import type { EntregaEvaluacionResponse } from '@/features/assestment/teacher/review_activity/review_activity.types'
 
 
-export interface EntregaEvaluacionRequest {
-  user_id_lms: string
-  evaluacion_id: number
-}
-
 export async function getEntregaEvaluacion(
   userId: string, 
   evaluacionId: number
 ): Promise<EntregaEvaluacionResponse | null> {
   try {
-    const requestBody: EntregaEvaluacionRequest = {
-      user_id_lms: userId,
-      evaluacion_id: evaluacionId
-    }
 
     const response = await fetch(
-      `${configs.apiBaseUrl}/api/evaluacion/entrega/`,
+      `${configs.apiBaseUrl}/api/evaluacion/entrega/?user_id_lms=${userId}&evaluacion_id=${evaluacionId}`,
       {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody)
+        }
       }
     )
 

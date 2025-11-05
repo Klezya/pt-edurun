@@ -37,8 +37,8 @@ async def update_evaluacion(evaluacion_id: int, evaluacion: EvaluacionUpdate):
 
 @router.post("/evaluacion/entrega/")
 async def submit_evaluacion(entrega: EntregaEvaluacion):
-    from functions.evaluaciones import create_entrega_evaluacion
-    response = create_entrega_evaluacion(entrega)
+    from functions.evaluaciones import create_or_update_entrega_evaluacion
+    response = create_or_update_entrega_evaluacion(entrega)
     return response
 
 @router.get("/evaluacion/entrega/")
