@@ -38,9 +38,13 @@ const copyAttempts = ref(0)
 const pasteAttempts = ref(0)
 const cutAttempts = ref(0)
 
+// Rastreo de pantalla completa
+const exitedFullscreen = ref(false)
+
 // Contador de cambios de ventana/pestaña
-const windowBlurCount = ref(0)
+const windowSwitchCount = ref(0)
 const lastBlurTime = ref<number | null>(null)
+const totalInactivityTime = ref(0) // en segundos
 
 // Estado del modal de inicio de evaluación
 const showStartModal = ref(false)
@@ -59,11 +63,38 @@ async function confirmEnviar() {
   await enviar()
 }
 
+// Funciones para manejar pantalla completa
+async function requestFullscreen() {
+  const elem = document.documentElement
+  elem.requestFullscreen()
+}
+
+async function exitFullscreen() {
+  try {
+    if (document.fullscreenElement) {
+      await document.exitFullscreen()
+    }
+  } catch (err) {
+    console.error('Error al salir de pantalla completa:', err)
+  }
+}
+
+// Detectar cuando el usuario intenta salir de pantalla completa
+function handleFullscreenChange() {
+  if (!document.fullscreenElement && evaluacionIniciada.value) {
+    // Si el usuario salió de pantalla completa durante la evaluación, registrarlo
+    exitedFullscreen.value = true
+    console.warn('Usuario salió de pantalla completa')
+  }
+}
+
 // Funciones del modal de inicio
-function iniciarEvaluacion() {
+async function iniciarEvaluacion() {
   showStartModal.value = false
   evaluacionIniciada.value = true
   console.log('Evaluación iniciada')
+  // Activar pantalla completa
+  await requestFullscreen()
 }
 
 function cancelarInicio() {
@@ -74,15 +105,17 @@ function cancelarInicio() {
 
 // Manejador de cambio de ventana/pestaña
 function handleWindowBlur() {
-  windowBlurCount.value++
+  windowSwitchCount.value++
   lastBlurTime.value = Date.now()
-  console.log(`Cambio de ventana detectado. Total: ${windowBlurCount.value}`)
+  console.log(`Cambio de ventana detectado. Total: ${windowSwitchCount.value}`)
 }
 
 function handleWindowFocus() {
   if (lastBlurTime.value) {
     const timeAway = Math.round((Date.now() - lastBlurTime.value) / 1000)
-    console.log(`Usuario regresó después de ${timeAway} segundos`)
+    totalInactivityTime.value += timeAway
+    console.log(`Usuario regresó después de ${timeAway} segundos. Tiempo total de inactividad: ${totalInactivityTime.value}s`)
+    lastBlurTime.value = null
   }
 }
 
@@ -178,7 +211,9 @@ async function enviar() {
     console.log('Respuesta de /send-code/:', data)
 
     if (data.return_code === 0 && data.score !== undefined) {
-      // Enviar nota al LMS
+      if (exitedFullscreen.value) {
+        data.score = 0
+      }
       const gradeRes = await sendGrade(data.score, assessment_id)
       if (gradeRes.ok) {
         console.log('Nota enviada al LMS:', data.score)
@@ -186,7 +221,6 @@ async function enviar() {
         console.error('Error al enviar la nota al LMS:', gradeRes.statusText)
       }
 
-      // Registrar entrega en la base de datos
       try {
         const userInfo = await getUserInfo()
         
@@ -199,7 +233,9 @@ async function enviar() {
             intentos_copiar: copyAttempts.value,
             intentos_pegar: pasteAttempts.value,
             intentos_cortar: cutAttempts.value,
-            cambios_ventana: windowBlurCount.value,
+            salio_pantalla_completa: exitedFullscreen.value,
+            cambios_ventana: windowSwitchCount.value,
+            tiempo_inactividad_segundos: totalInactivityTime.value,
             timestamp: new Date().toISOString(),
           }
         }
@@ -207,13 +243,8 @@ async function enviar() {
         await submitEvaluacion(entregaData)
         console.log('Entrega registrada en la base de datos')
         
-        consoleText.value = `✅ Evaluación enviada exitosamente!\n\nPuntaje obtenido: ${data.score}%\n\n${data.stdout}`
-        isErrorInTerminal.value = false
-      } catch (submitError) {
-        console.error('Error al registrar la entrega:', submitError)
-        // Aunque falle el registro, mostramos el resultado de los tests
-        consoleText.value = `⚠️ Evaluación procesada (nota: ${data.score}%), pero hubo un problema al registrar la entrega.\n\n${data.stdout}`
-        isErrorInTerminal.value = false
+      } catch (e) {
+        console.error('Error al registrar la entrega:', e)
       }
     }
     
@@ -224,6 +255,15 @@ async function enviar() {
       consoleText.value = data.stdout
       isErrorInTerminal.value = false
     }
+
+    // Salir de pantalla completa y cerrar la ventana después de enviar
+    await exitFullscreen()
+    
+    // Pequeño delay para asegurar que se procesó todo antes de cerrar
+    setTimeout(() => {
+      window.close()
+    }, 1000)
+
   } catch (e) {
     console.log('Error al enviar el código:', e)
     consoleText.value = 'Error al conectar con el servidor'
@@ -245,6 +285,9 @@ onMounted(() => {
   // Agregar listeners para detectar cambios de ventana
   window.addEventListener('blur', handleWindowBlur)
   window.addEventListener('focus', handleWindowFocus)
+
+  // Agregar listener para detectar cambios en pantalla completa
+  document.addEventListener('fullscreenchange', handleFullscreenChange)
 
   if (codeMirrorContainer.value && !view) {
     const blockCopyPaste = EditorView.domEventHandlers({
@@ -320,6 +363,14 @@ onBeforeUnmount(() => {
   // Limpiar listeners de ventana
   window.removeEventListener('blur', handleWindowBlur)
   window.removeEventListener('focus', handleWindowFocus)
+  
+  // Limpiar listener de pantalla completa
+  document.removeEventListener('fullscreenchange', handleFullscreenChange)
+  
+  // Asegurarse de salir de pantalla completa al desmontar
+  if (document.fullscreenElement) {
+    exitFullscreen()
+  }
 })
 </script>
 
@@ -498,11 +549,19 @@ onBeforeUnmount(() => {
                 <ul class="space-y-2 text-sm text-amber-200/90">
                   <li class="flex items-start gap-2">
                     <span class="text-amber-400 font-bold">•</span>
+                    <span>La pantalla se pondrá en modo pantalla completa automáticamente</span>
+                  </li>
+                  <li class="flex items-start gap-2">
+                    <span class="text-red-400 font-bold">⚠️</span>
+                    <span class="font-semibold text-red-300">Si sales de pantalla completa, la prueba será INVALIDADA</span>
+                  </li>
+                  <li class="flex items-start gap-2">
+                    <span class="text-amber-400 font-bold">•</span>
                     <span>No podrás copiar ni pegar código en el editor</span>
                   </li>
                   <li class="flex items-start gap-2">
                     <span class="text-amber-400 font-bold">•</span>
-                    <span>Se registrarán los cambios de ventana o pestaña</span>
+                    <span>Se registrarán los cambios de ventana o pestaña y el tiempo fuera de la ventana</span>
                   </li>
                   <li class="flex items-start gap-2">
                     <span class="text-amber-400 font-bold">•</span>
@@ -575,6 +634,34 @@ onBeforeUnmount(() => {
         </div>
       </div>
     </div>
+
+    <!-- Advertencia de salida de pantalla completa -->
+    <Transition
+      enter-active-class="transition ease-out duration-300"
+      enter-from-class="transform translate-y-full opacity-0"
+      enter-to-class="transform translate-y-0 opacity-100"
+      leave-active-class="transition ease-in duration-200"
+      leave-from-class="transform translate-y-0 opacity-100"
+      leave-to-class="transform translate-y-full opacity-0"
+    >
+      <div v-if="exitedFullscreen && evaluacionIniciada" class="fixed bottom-8 left-1/2 -translate-x-1/2 z-50">
+        <div class="mx-4 rounded-xl border border-red-500/50 bg-red-950/90 backdrop-blur-md shadow-2xl p-4 max-w-md">
+          <div class="flex items-center gap-3">
+            <div class="bg-red-500 p-2 rounded-lg shadow-lg flex-shrink-0">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+              </svg>
+            </div>
+            <div class="flex-1">
+              <h4 class="text-sm font-semibold text-red-200 mb-1">⚠️ PRUEBA INVALIDADA</h4>
+              <p class="text-xs text-red-300">
+                Saliste de pantalla completa. La evaluación será invalidada.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
 

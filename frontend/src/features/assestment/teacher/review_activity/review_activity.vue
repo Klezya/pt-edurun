@@ -152,20 +152,77 @@ function handleVolver() {
 
             <!-- Información de la Entrega -->
             <div v-if="entregaData" class="space-y-6">
+              <!-- Alerta de evaluación inválida -->
+              <div 
+                v-if="entregaData.detalles?.salio_pantalla_completa" 
+                class="rounded-2xl border border-red-500/50 bg-red-950/40 backdrop-blur-md shadow-2xl overflow-hidden"
+              >
+                <div class="p-8">
+                  <div class="flex items-center gap-4">
+                    <div class="bg-red-500 p-3 rounded-xl shadow-lg">
+                      <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                      </svg>
+                    </div>
+                    <div class="flex-1">
+                      <h3 class="text-2xl font-bold text-red-200 mb-2">⚠️ EVALUACIÓN INVALIDADA</h3>
+                      <p class="text-red-300">
+                        El estudiante salió de pantalla completa durante la evaluación. Esta prueba no es válida.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <!-- Nota obtenida -->
-              <div class="rounded-2xl border border-white/10 bg-slate-950/40 backdrop-blur-md shadow-2xl overflow-hidden">
+              <div 
+                :class="[
+                  'rounded-2xl border backdrop-blur-md shadow-2xl overflow-hidden',
+                  entregaData.detalles?.salio_pantalla_completa 
+                    ? 'border-red-500/50 bg-red-950/20' 
+                    : 'border-white/10 bg-slate-950/40'
+                ]"
+              >
                 <div class="p-8">
                   <div class="flex items-center gap-3 mb-6 pb-4 border-b border-white/10">
-                    <div class="bg-gradient-to-br from-emerald-500/20 to-teal-600/20 p-2 rounded-lg">
-                      <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div 
+                      :class="[
+                        'p-2 rounded-lg',
+                        entregaData.detalles?.salio_pantalla_completa
+                          ? 'bg-red-500/20'
+                          : 'bg-gradient-to-br from-emerald-500/20 to-teal-600/20'
+                      ]"
+                    >
+                      <svg 
+                        :class="[
+                          'w-6 h-6',
+                          entregaData.detalles?.salio_pantalla_completa ? 'text-red-400' : 'text-emerald-400'
+                        ]" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                      >
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                       </svg>
                     </div>
                     <h3 class="text-xl font-bold text-white">Resultado de la Evaluación</h3>
+                    <span 
+                      v-if="entregaData.detalles?.salio_pantalla_completa"
+                      class="ml-auto px-3 py-1 rounded-full bg-red-500/20 text-red-300 text-xs font-semibold border border-red-500/30"
+                    >
+                      NO VÁLIDA
+                    </span>
                   </div>
                   <div class="text-center py-6">
                     <p class="text-sm text-slate-400 mb-2">Nota obtenida</p>
-                    <p class="text-6xl font-bold bg-gradient-to-r from-emerald-400 to-teal-500 bg-clip-text text-transparent">
+                    <p 
+                      :class="[
+                        'text-6xl font-bold bg-clip-text text-transparent',
+                        entregaData.detalles?.salio_pantalla_completa
+                          ? 'bg-gradient-to-r from-red-400 to-red-600'
+                          : 'bg-gradient-to-r from-emerald-400 to-teal-500'
+                      ]"
+                    >
                       {{ entregaData.nota }}%
                     </p>
                   </div>
@@ -200,7 +257,66 @@ function handleVolver() {
                     </div>
                     <h3 class="text-xl font-bold text-white">Estadísticas de Comportamiento</h3>
                   </div>
-                  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  
+                  <!-- Estado de pantalla completa -->
+                  <div 
+                    :class="[
+                      'mb-6 p-5 rounded-xl border flex items-center gap-4',
+                      entregaData.detalles.salio_pantalla_completa
+                        ? 'bg-red-950/30 border-red-500/50'
+                        : 'bg-emerald-950/30 border-emerald-500/50'
+                    ]"
+                  >
+                    <div 
+                      :class="[
+                        'p-3 rounded-xl shadow-lg',
+                        entregaData.detalles.salio_pantalla_completa
+                          ? 'bg-red-500'
+                          : 'bg-emerald-500'
+                      ]"
+                    >
+                      <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path 
+                          v-if="entregaData.detalles.salio_pantalla_completa"
+                          stroke-linecap="round" 
+                          stroke-linejoin="round" 
+                          stroke-width="2" 
+                          d="M6 18L18 6M6 6l12 12"
+                        ></path>
+                        <path 
+                          v-else
+                          stroke-linecap="round" 
+                          stroke-linejoin="round" 
+                          stroke-width="2" 
+                          d="M5 13l4 4L19 7"
+                        ></path>
+                      </svg>
+                    </div>
+                    <div class="flex-1">
+                      <p 
+                        :class="[
+                          'text-sm font-medium mb-1',
+                          entregaData.detalles.salio_pantalla_completa
+                            ? 'text-red-300'
+                            : 'text-emerald-300'
+                        ]"
+                      >
+                        Estado de Pantalla Completa
+                      </p>
+                      <p 
+                        :class="[
+                          'text-xl font-bold',
+                          entregaData.detalles.salio_pantalla_completa
+                            ? 'text-red-200'
+                            : 'text-emerald-200'
+                        ]"
+                      >
+                        {{ entregaData.detalles.salio_pantalla_completa ? 'Salió de pantalla completa' : 'Permaneció en pantalla completa' }}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <div class="p-4 rounded-lg bg-slate-900/50 border border-white/10">
                       <p class="text-xs text-slate-400 mb-1">Intentos de copiar</p>
                       <p class="text-2xl font-bold text-white">{{ entregaData.detalles.intentos_copiar }}</p>
@@ -216,6 +332,10 @@ function handleVolver() {
                     <div class="p-4 rounded-lg bg-slate-900/50 border border-white/10">
                       <p class="text-xs text-slate-400 mb-1">Cambios de ventana</p>
                       <p class="text-2xl font-bold text-white">{{ entregaData.detalles.cambios_ventana }}</p>
+                    </div>
+                    <div class="p-4 rounded-lg bg-slate-900/50 border border-white/10">
+                      <p class="text-xs text-slate-400 mb-1">Tiempo fuera de la Evaluacion</p>
+                      <p class="text-2xl font-bold text-white">{{ entregaData.detalles.tiempo_inactividad_segundos }}s</p>
                     </div>
                   </div>
                   <div v-if="entregaData.detalles.timestamp" class="mt-4 p-4 rounded-lg bg-slate-900/50 border border-white/10">

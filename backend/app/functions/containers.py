@@ -194,6 +194,9 @@ def evaluate_activity(code: str, evaluacion_id: int):
     if score_match:
         score = int(score_match.group(1))
 
+    if result.returncode != 0:
+        errors = output + "\n" + errors
+
     return {
         "score": score,
         "stdout": output,
