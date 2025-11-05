@@ -48,6 +48,20 @@ onMounted(async () => {
 function handleVolver() {
   router.back()
 }
+
+function formatTime(segundos: number): string {
+  const horas = Math.floor(segundos / 3600)
+  const minutos = Math.floor((segundos % 3600) / 60)
+  const segs = segundos % 60
+  
+  if (horas > 0) {
+    return `${horas}h ${minutos}m`
+  } else if (minutos > 0) {
+    return `${minutos}m ${segs}s`
+  } else {
+    return `${segs}s`
+  }
+}
 </script>
 
 <template>
@@ -246,16 +260,70 @@ function handleVolver() {
                 </div>
               </div>
 
-              <!-- Detalles de la entrega -->
+              <!-- Actividad de Desarrollo -->
+              <div v-if="entregaData.detalles" class="rounded-2xl border border-white/10 bg-slate-950/40 backdrop-blur-md shadow-2xl overflow-hidden">
+                <div class="p-8">
+                  <div class="flex items-center gap-3 mb-6 pb-4 border-b border-white/10">
+                    <div class="bg-gradient-to-br from-blue-500/20 to-purple-600/20 p-2 rounded-lg">
+                      <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                      </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-white">Actividad de Desarrollo</h3>
+                  </div>
+                  
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="p-6 rounded-xl bg-gradient-to-br from-blue-900/30 to-blue-800/20 border border-blue-500/30">
+                      <div class="flex items-center gap-3 mb-2">
+                        <div class="bg-blue-500/20 p-2 rounded-lg">
+                          <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                          </svg>
+                        </div>
+                        <p class="text-sm font-medium text-blue-300">Ejecuciones de código</p>
+                      </div>
+                      <p class="text-4xl font-bold text-blue-200">{{ entregaData.detalles.ejecuciones_codigo || 0 }}</p>
+                      <p class="text-xs text-blue-400/70 mt-1">Veces que ejecutó su código</p>
+                    </div>
+                    <div class="p-6 rounded-xl bg-gradient-to-br from-purple-900/30 to-purple-800/20 border border-purple-500/30">
+                      <div class="flex items-center gap-3 mb-2">
+                        <div class="bg-purple-500/20 p-2 rounded-lg">
+                          <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                          </svg>
+                        </div>
+                        <p class="text-sm font-medium text-purple-300">Ejecuciones de tests</p>
+                      </div>
+                      <p class="text-4xl font-bold text-purple-200">{{ entregaData.detalles.ejecuciones_tests || 0 }}</p>
+                      <p class="text-xs text-purple-400/70 mt-1">Veces que corrió los tests</p>
+                    </div>
+                    <div class="p-6 rounded-xl bg-gradient-to-br from-emerald-900/30 to-emerald-800/20 border border-emerald-500/30">
+                      <div class="flex items-center gap-3 mb-2">
+                        <div class="bg-emerald-500/20 p-2 rounded-lg">
+                          <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                          </svg>
+                        </div>
+                        <p class="text-sm font-medium text-emerald-300">Tiempo total</p>
+                      </div>
+                      <p class="text-4xl font-bold text-emerald-200">{{ formatTime(entregaData.detalles.tiempo_total_segundos || 0) }}</p>
+                      <p class="text-xs text-emerald-400/70 mt-1">Duración de la evaluación</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Acciones Sospechosas -->
               <div v-if="entregaData.detalles" class="rounded-2xl border border-white/10 bg-slate-950/40 backdrop-blur-md shadow-2xl overflow-hidden">
                 <div class="p-8">
                   <div class="flex items-center gap-3 mb-6 pb-4 border-b border-white/10">
                     <div class="bg-gradient-to-br from-amber-500/20 to-orange-600/20 p-2 rounded-lg">
                       <svg class="w-6 h-6 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
                       </svg>
                     </div>
-                    <h3 class="text-xl font-bold text-white">Estadísticas de Comportamiento</h3>
+                    <h3 class="text-xl font-bold text-white">Acciones Sospechosas</h3>
                   </div>
                   
                   <!-- Estado de pantalla completa -->

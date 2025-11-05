@@ -38,6 +38,13 @@ const copyAttempts = ref(0)
 const pasteAttempts = ref(0)
 const cutAttempts = ref(0)
 
+// Métricas de ejecución
+const codeExecutionCount = ref(0)
+const testExecutionCount = ref(0)
+
+// Tiempo total de desarrollo
+const startTime = ref<number | null>(null)
+
 // Rastreo de pantalla completa
 const exitedFullscreen = ref(false)
 
@@ -92,6 +99,7 @@ function handleFullscreenChange() {
 async function iniciarEvaluacion() {
   showStartModal.value = false
   evaluacionIniciada.value = true
+  startTime.value = Date.now()
   console.log('Evaluación iniciada')
   // Activar pantalla completa
   await requestFullscreen()
@@ -140,6 +148,8 @@ async function run() {
   if (isCodeRunning.value || !evaluacionIniciada.value) return
   isCodeRunning.value = true
   try {
+    codeExecutionCount.value++
+    
     const res = await runCode(textCode.value)
 
     if (!res.ok) {
@@ -167,6 +177,8 @@ async function correrTests() {
   if (isCodeRunning.value || !evaluacionIniciada.value) return
   isCodeRunning.value = true
   try {
+    testExecutionCount.value++
+    
     const res = await runEvaluacionTests(textCode.value, evaluacion.value?.id as number)
 
     if (!res.ok) {
@@ -224,6 +236,11 @@ async function enviar() {
       try {
         const userInfo = await getUserInfo()
         
+        // Calcular tiempo total de desarrollo
+        const tiempoTotalSegundos = startTime.value 
+          ? Math.round((Date.now() - startTime.value) / 1000)
+          : 0
+        
         const entregaData = {
           id_evaluacion: evaluacion.value?.id as number,
           id_alumno: userInfo.userId,
@@ -236,6 +253,9 @@ async function enviar() {
             salio_pantalla_completa: exitedFullscreen.value,
             cambios_ventana: windowSwitchCount.value,
             tiempo_inactividad_segundos: totalInactivityTime.value,
+            ejecuciones_codigo: codeExecutionCount.value,
+            ejecuciones_tests: testExecutionCount.value,
+            tiempo_total_segundos: tiempoTotalSegundos,
             timestamp: new Date().toISOString(),
           }
         }

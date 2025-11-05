@@ -11,6 +11,9 @@ export interface EntregaEvaluacionResponse {
     salio_pantalla_completa: boolean
     cambios_ventana: number
     tiempo_inactividad_segundos: number
+    ejecuciones_codigo?: number
+    ejecuciones_tests?: number
+    tiempo_total_segundos?: number
     timestamp: string
   }
   fecha_entrega?: string
