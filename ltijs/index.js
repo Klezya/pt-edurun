@@ -12,8 +12,8 @@ lti.setup(process.env.LTI_KEY,
   {
     url: process.env.MONGO_URL
   }, {
-    staticPath: path.join(__dirname, '../frontend/dist'), // Path to static files
-    ltiaas: true,
+    //staticPath: path.join(__dirname, '../frontend/dist'), // Path to static files
+    //ltiaas: true,
     cookies: {
       secure: true, // Set secure to true if the testing platform is in a different domain and https is being used
       sameSite: 'None' // Set sameSite to 'None' if the testing platform is in a different domain and https is being used
