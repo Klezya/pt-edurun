@@ -13,11 +13,6 @@ export const assestmentsRoutes = [
         name: 'evaluacion',
         component: { template: '<div></div>' },
         beforeEnter: evaluacionGuard
-    },
-    {
-        path: '/members',
-        name: 'members',
-        component: () => import('@/features/assestment/teacher/test/members.vue'),
     }
 ]
 

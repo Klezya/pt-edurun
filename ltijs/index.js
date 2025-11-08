@@ -27,7 +27,7 @@ lti.onConnect(async (token, req, res) => {
   
   const ltik = res.locals.ltik;
   const type = req.query.type;
-  
+
   const redirectUrl = `${frontendUrl}/?ltik=${ltik}`;
   
   if (!type) {

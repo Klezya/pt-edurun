@@ -86,10 +86,8 @@ async function exitFullscreen() {
   }
 }
 
-// Detectar cuando el usuario intenta salir de pantalla completa
 function handleFullscreenChange() {
   if (!document.fullscreenElement && evaluacionIniciada.value) {
-    // Si el usuario salió de pantalla completa durante la evaluación, registrarlo
     exitedFullscreen.value = true
     console.warn('Usuario salió de pantalla completa')
   }
@@ -223,20 +221,9 @@ async function enviar() {
     console.log('Respuesta de /send-code/:', data)
 
     if (data.return_code === 0 && data.score !== undefined) {
-      if (exitedFullscreen.value) {
-        data.score = 0
-      }
-      const gradeRes = await sendGrade(data.score, assessment_id)
-      if (gradeRes.ok) {
-        console.log('Nota enviada al LMS:', data.score)
-      } else {
-        console.error('Error al enviar la nota al LMS:', gradeRes.statusText)
-      }
-
+      
       try {
         const userInfo = await getUserInfo()
-        
-        // Calcular tiempo total de desarrollo
         const tiempoTotalSegundos = startTime.value 
           ? Math.round((Date.now() - startTime.value) / 1000)
           : 0
@@ -265,6 +252,16 @@ async function enviar() {
         
       } catch (e) {
         console.error('Error al registrar la entrega:', e)
+      }
+
+      if (exitedFullscreen.value) {
+        data.score = 0
+      }
+      const gradeRes = await sendGrade(data.score, assessment_id)
+      if (gradeRes.ok) {
+        console.log('Nota enviada al LMS:', data.score)
+      } else {
+        console.error('Error al enviar la nota al LMS:', gradeRes.statusText)
       }
     }
     
@@ -654,34 +651,6 @@ onBeforeUnmount(() => {
         </div>
       </div>
     </div>
-
-    <!-- Advertencia de salida de pantalla completa -->
-    <Transition
-      enter-active-class="transition ease-out duration-300"
-      enter-from-class="transform translate-y-full opacity-0"
-      enter-to-class="transform translate-y-0 opacity-100"
-      leave-active-class="transition ease-in duration-200"
-      leave-from-class="transform translate-y-0 opacity-100"
-      leave-to-class="transform translate-y-full opacity-0"
-    >
-      <div v-if="exitedFullscreen && evaluacionIniciada" class="fixed bottom-8 left-1/2 -translate-x-1/2 z-50">
-        <div class="mx-4 rounded-xl border border-red-500/50 bg-red-950/90 backdrop-blur-md shadow-2xl p-4 max-w-md">
-          <div class="flex items-center gap-3">
-            <div class="bg-red-500 p-2 rounded-lg shadow-lg flex-shrink-0">
-              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-              </svg>
-            </div>
-            <div class="flex-1">
-              <h4 class="text-sm font-semibold text-red-200 mb-1">⚠️ PRUEBA INVALIDADA</h4>
-              <p class="text-xs text-red-300">
-                Saliste de pantalla completa. La evaluación será invalidada.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </Transition>
   </div>
 </template>
 

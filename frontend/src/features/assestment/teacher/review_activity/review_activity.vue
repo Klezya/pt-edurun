@@ -228,7 +228,7 @@ function formatTime(segundos: number): string {
                     </span>
                   </div>
                   <div class="text-center py-6">
-                    <p class="text-sm text-slate-400 mb-2">Nota obtenida</p>
+                    <p class="text-sm text-slate-400 mb-2">Puntaje obtenido de los Test Unitarios</p>
                     <p 
                       :class="[
                         'text-6xl font-bold bg-clip-text text-transparent',
@@ -237,7 +237,7 @@ function formatTime(segundos: number): string {
                           : 'bg-gradient-to-r from-emerald-400 to-teal-500'
                       ]"
                     >
-                      {{ entregaData.nota }}%
+                      {{ entregaData.nota }}/100
                     </p>
                   </div>
                 </div>
