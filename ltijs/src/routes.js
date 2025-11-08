@@ -4,7 +4,7 @@ const path = require('path')
 // Requiring Ltijs
 const lti = require('ltijs').Provider
 
-const Url = 'https://ock5lg-ip-201-187-224-78.tunnelmole.net'
+const Url = process.env.SELF_URL
 
 // Grading route
 router.post('/grade', async (req, res) => {
