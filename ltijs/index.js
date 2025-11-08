@@ -10,8 +10,7 @@ const frontendUrl = 'https://edurunfrontend.loca.lt'
 // Setup
 lti.setup(process.env.LTI_KEY,
   {
-    url: 'mongodb://' + process.env.DB_HOST + '/' + process.env.DB_NAME + '?authSource=admin',
-    connection: { user: process.env.DB_USER, pass: process.env.DB_PASS }
+    url: process.env.MONGO_URL
   }, {
     staticPath: path.join(__dirname, '../frontend/dist'), // Path to static files
     ltiaas: true,
