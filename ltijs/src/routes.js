@@ -4,20 +4,27 @@ const path = require('path')
 // Requiring Ltijs
 const lti = require('ltijs').Provider
 
+const Url = 'https://ock5lg-ip-201-187-224-78.tunnelmole.net'
+
 // Grading route
 router.post('/grade', async (req, res) => {
   try {
     const idtoken = res.locals.token // IdToken
     const score = req.body.grade // User numeric score sent in the body
+    const assessment_id = req.body.assessmentId
     // Creating Grade object
     const gradeObj = {
       userId: idtoken.user,
       scoreGiven: score,
       scoreMaximum: 100,
       activityProgress: 'Completed',
-      gradingProgress: 'FullyGraded'
+      gradingProgress: 'FullyGraded',
+      'https://canvas.instructure.com/lti/submission': {
+        submission_type: 'basic_lti_launch',
+        submission_data: `${Url}?type=review&user_id=${idtoken.user}&assessment_id=${assessment_id}`,
+        submitted_at: new Date().toISOString()
+      }
     }
-
     // Selecting linetItem ID
     let lineItemId = idtoken.platformContext.endpoint.lineitem // Attempting to retrieve it from idtoken
     if (!lineItemId) {
@@ -36,7 +43,7 @@ router.post('/grade', async (req, res) => {
         lineItemId = lineItem.id
       } else lineItemId = lineItems[0].id
     }
-
+    console.log('Using line item id: ', lineItemId)
     // Sending Grade
     const responseGrade = await lti.Grade.submitScore(idtoken, lineItemId, gradeObj)
     return res.send(responseGrade)
@@ -51,7 +58,7 @@ router.get('/members', async (req, res) => {
   try {
     const result = await lti.NamesAndRoles.getMembers(res.locals.token)
     if (result) return res.send(result.members)
-    return res.sendStatus(500)
+      return res.sendStatus(500)
   } catch (err) {
     console.log(err.message)
     return res.status(500).send(err.message)
@@ -65,13 +72,11 @@ router.post('/deeplink', async (req, res) => {
 
     const items = {
       type: 'ltiResourceLink',
-      title: 'Ltijs Demo',
+      title: resource.name,
       custom: {
-        name: resource.name,
         value: resource.value
       }
     }
-
     const form = await lti.DeepLinking.createDeepLinkingForm(res.locals.token, items, { message: 'Successfully Registered' })
     if (form) return res.send(form)
     return res.sendStatus(500)
@@ -100,26 +105,53 @@ router.get('/resources', async (req, res) => {
   return res.send(resources)
 })
 
-// Get user and context information
-router.get('/info', async (req, res) => {
-  const token = res.locals.token
-  const context = res.locals.context
 
+router.get('/info/user', async (req, res) => {
   const info = { }
-  if (token.userInfo) {
-    if (token.userInfo.name) info.name = token.userInfo.name
-    if (token.userInfo.email) info.email = token.userInfo.email
+  const userContext = res.locals.context
+  const usertoken = res.locals.token.userInfo
+
+  if (usertoken) {
+    if (usertoken.name) info.name = usertoken.name
   }
 
-  if (context.roles) info.roles = context.roles
-  if (context.context) info.context = context.context
-
+  if (userContext.user) info.userId = userContext.user
+  if (userContext.roles) info.roles = userContext.roles
   return res.send(info)
 })
 
-router.get('/api/me', async (req, res) => {
+router.get('/info/course', async (req, res) => {
+  const info = { }
+  const courseInfo = res.locals.context.context
+
+  if (courseInfo){
+    info.id = courseInfo.id
+    info.label = courseInfo.label
+    info.title = courseInfo.title
+  } 
+  return res.send(info)
+})
+
+router.get('/info/platform', async (req, res) => {
+  const info = { }
+  const platformInfo = res.locals.token.platformInfo
+
+  if (platformInfo) {
+    info.guid = platformInfo.guid
+    info.name = platformInfo.name
+    info.version = platformInfo.version
+    info.product_family_code = platformInfo.product_family_code
+  }
   
-  return res.send({ name: 'Test User' })
+  return res.send(info)
+})
+
+router.get('/info/assignment', async (req, res) => {
+  idtoken = res.locals.token
+
+  console.log(idtoken.platformContext)
+
+  return res.send(idtoken.platformContext.endpoint.lineitem)
 })
 
 // Wildcard route to deal with redirecting to React routes

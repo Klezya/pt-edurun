@@ -22,7 +22,7 @@ export default defineConfig({
   },
   server: {
     allowedHosts: [
-      'frontend.loca.lt'
+      'edurunfrontend.loca.lt'
     ]
   },
 })
