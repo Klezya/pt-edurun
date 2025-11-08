@@ -5,7 +5,7 @@ const { url } = require('inspector')
 
 const lti = require('ltijs').Provider
 
-const frontendUrl = 'https://edurunfrontend.loca.lt'
+const frontendUrl = process.env.FRONTEND_URL
 
 // Setup
 lti.setup(process.env.LTI_KEY,
