@@ -11,7 +11,7 @@ lti.setup(process.env.LTI_KEY,
     url: process.env.MONGO_URL
   }, {
     //staticPath: path.join(__dirname, '../frontend/dist'), // Path to static files
-    ltiaas: true,
+    //ltiaas: true,
     cookies: {
       secure: true, // Set secure to true if the testing platform is in a different domain and https is being used
       sameSite: 'None' // Set sameSite to 'None' if the testing platform is in a different domain and https is being used
@@ -78,7 +78,7 @@ const setup = async () => {
   await lti.registerPlatform({
     url: 'https://edurundev.milaulas.com',
     name: 'edurundev',
-    clientId: 'taxkx5XEIY7b9VK',
+    clientId: 'FZMAosXXMgnvVgP',
     authenticationEndpoint: 'https://edurundev.milaulas.com/mod/lti/auth.php',
     accesstokenEndpoint: 'https://edurundev.milaulas.com/mod/lti/token.php',
     authConfig: { method: 'JWK_SET', key: 'https://edurundev.milaulas.com/mod/lti/certs.php' }
