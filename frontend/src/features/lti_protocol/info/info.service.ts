@@ -9,7 +9,7 @@ export async function getUserInfo(): Promise<UserInfo> {
     const res = await fetch(`${configs.ltiBaseUrl}/info/user`, {
         method: 'GET',
         headers: {
-            'credentials': 'include',
+            'skip_zrok_interstitial': 'any',
             'Authorization': `Bearer ${ltik}`,
         },
     })
