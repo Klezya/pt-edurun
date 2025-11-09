@@ -80,7 +80,7 @@ const setup = async () => {
   await lti.registerPlatform({
     url: 'https://edurundev.milaulas.com',
     name: 'edurundev',
-    clientId: 'taxkx5XEIY7b9VK',
+    clientId: 'FZMAosXXMgnvVgP',
     authenticationEndpoint: 'https://edurundev.milaulas.com/mod/lti/auth.php',
     accesstokenEndpoint: 'https://edurundev.milaulas.com/mod/lti/token.php',
     authConfig: { method: 'JWK_SET', key: 'https://edurundev.milaulas.com/mod/lti/certs.php' }
