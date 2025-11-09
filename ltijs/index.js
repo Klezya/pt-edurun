@@ -1,7 +1,5 @@
 require('dotenv').config()
-const path = require('path')
 const routes = require('./src/routes')
-const { url } = require('inspector')
 
 const lti = require('ltijs').Provider
 
@@ -12,7 +10,7 @@ lti.setup(process.env.LTI_KEY,
   {
     url: process.env.MONGO_URL
   }, {
-    staticPath: path.join(__dirname, '../frontend/dist'), // Path to static files
+    //staticPath: path.join(__dirname, '../frontend/dist'), // Path to static files
     ltiaas: true,
     cookies: {
       secure: true, // Set secure to true if the testing platform is in a different domain and https is being used
@@ -85,10 +83,26 @@ const setup = async () => {
     accesstokenEndpoint: 'https://edurundev.milaulas.com/mod/lti/token.php',
     authConfig: { method: 'JWK_SET', key: 'https://edurundev.milaulas.com/mod/lti/certs.php' }
   })
+  await lti.registerPlatform({
+    url: 'https://edurundev.milaulas.com',
+    name: 'edurundev',
+    clientId: 'O51h5Jl408vhAz4',
+    authenticationEndpoint: 'https://edurundev.milaulas.com/mod/lti/auth.php',
+    accesstokenEndpoint: 'https://edurundev.milaulas.com/mod/lti/token.php',
+    authConfig: { method: 'JWK_SET', key: 'https://edurundev.milaulas.com/mod/lti/certs.php' }
+  })
    await lti.registerPlatform({
     url: 'https://172.19.202.187',
     name: 'canvas',
     clientId: '10000000000007',
+    authenticationEndpoint: 'https://172.19.202.187/api/lti/authorize_redirect',
+    accesstokenEndpoint: 'https://172.19.202.187/login/oauth2/token',
+    authConfig: { method: 'JWK_SET', key: 'https://172.19.202.187/api/lti/security/jwks' }
+  })
+  await lti.registerPlatform({
+    url: 'https://172.19.202.187',
+    name: 'canvas',
+    clientId: '10000000000008',
     authenticationEndpoint: 'https://172.19.202.187/api/lti/authorize_redirect',
     accesstokenEndpoint: 'https://172.19.202.187/login/oauth2/token',
     authConfig: { method: 'JWK_SET', key: 'https://172.19.202.187/api/lti/security/jwks' }
