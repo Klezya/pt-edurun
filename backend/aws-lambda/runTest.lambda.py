@@ -84,6 +84,15 @@ def lambda_handler(event, context):
             # Agregar el directorio de trabajo al path
             sys.path.insert(0, work_dir)
             
+            # Limpiar cualquier módulo previamente importado que pueda interferir
+            # Esto es importante porque Lambda reutiliza el entorno
+            modules_to_remove = [mod for mod in sys.modules.keys() if mod.startswith('app') or mod.startswith('test_code')]
+            for mod in modules_to_remove:
+                del sys.modules[mod]
+            
+            # Desactivar la escritura de archivos .pyc
+            sys.dont_write_bytecode = True
+            
             # Importar pytest aquí para asegurar que se use la versión de la layer
             import pytest
             
@@ -166,12 +175,16 @@ def lambda_handler(event, context):
             
             try:
                 with redirect_stdout(output_buffer), redirect_stderr(output_buffer):
-                    # Ejecutar pytest con timeout (sin timeout plugin que puede no estar instalado)
+                    # Ejecutar pytest sin buscar en otros directorios
                     pytest.main([
-                        'test_code.py', 
+                        'test_code.py',
                         '-v',
                         '--tb=short',  # Traceback corto
-                        '-x'  # Detener en el primer error
+                        '-x',  # Detener en el primer error
+                        '-p', 'no:cacheprovider',  # Desactivar caché de pytest
+                        '--override-ini=python_files=test_code.py',  # Solo este archivo
+                        '--override-ini=python_classes=',  # No buscar clases
+                        '--override-ini=python_functions=test_*'  # Solo funciones test_*
                     ], plugins=[plugin])
                 
                 # Construir la salida formateada
@@ -208,12 +221,23 @@ def lambda_handler(event, context):
                 return_code = 1
         
         finally:
+            # Restaurar sys.dont_write_bytecode
+            sys.dont_write_bytecode = False
+            
             # Restaurar el directorio de trabajo original
             os.chdir(original_cwd)
             
             # Limpiar el path
             if work_dir in sys.path:
                 sys.path.remove(work_dir)
+            
+            # Limpiar módulos importados de esta ejecución
+            modules_to_remove = [mod for mod in sys.modules.keys() if mod.startswith('app') or mod.startswith('test_code')]
+            for mod in modules_to_remove:
+                try:
+                    del sys.modules[mod]
+                except:
+                    pass
             
             # Limpiar todo el directorio de ejecución
             if os.path.exists(work_dir):
