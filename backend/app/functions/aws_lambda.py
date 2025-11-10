@@ -68,12 +68,19 @@ async def _execute_code_with_test(code: str, test: str) -> Dict[str, Any]:
         async with httpx.AsyncClient(timeout=60.0) as client:
             response = await client.post(url, json=payload)
             
-            print(f"[DEBUG] Lambda response status: {response.status_code}")
+            print(f"[DEBUG] Lambda HTTP status: {response.status_code}")
             print(f"[DEBUG] Lambda response: {response.text[:500]}")
             
-            response.raise_for_status()
+            # API Gateway siempre retorna 200 si Lambda se ejecutó
+            # El statusCode dentro del body es el resultado de la ejecución
+            if response.status_code != 200:
+                return {
+                    "stdout": "",
+                    "stderr": f"Error de API Gateway (HTTP {response.status_code}): {response.text}",
+                    "return_code": 1
+                }
             
-            # La respuesta tiene estructura: {'statusCode': 200, 'body': '{"stdout": ..., "stderr": ..., "return_code": ...}'}
+            # La respuesta tiene estructura: {'statusCode': 200/400, 'body': '{"stdout": ..., "stderr": ..., "return_code": ...}'}
             lambda_response = response.json()
             
             # Parsear el body que viene como string JSON
@@ -82,7 +89,7 @@ async def _execute_code_with_test(code: str, test: str) -> Dict[str, Any]:
             else:
                 body = lambda_response
             
-            # Retornar en el formato esperado
+            # Retornar en el formato esperado (incluso si el código del usuario falló)
             return {
                 "stdout": body.get("stdout", ""),
                 "stderr": body.get("stderr", ""),
