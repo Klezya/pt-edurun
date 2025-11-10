@@ -113,3 +113,8 @@ async def run_evaluacion_test(code: str = Form(...), evaluacion_id: int = Form(.
 async def run_code_lambda(code: str = Form(...)):
     from functions.aws_lambda import execute_python_code
     return await execute_python_code(code)
+
+@router.post("/run-tarea-test/")
+async def run_tarea_test_lambda(code: str = Form(...), tarea_id: int = Form(...)):
+    from functions.aws_lambda import execute_tarea_test
+    return await execute_tarea_test(code, tarea_id)

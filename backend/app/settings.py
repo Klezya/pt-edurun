@@ -7,3 +7,5 @@ SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
 FRONTEND_URL = os.getenv("FRONTEND_URL")
+
+LAMBDA_API_URL = os.getenv("LAMBDA_API_URL")
