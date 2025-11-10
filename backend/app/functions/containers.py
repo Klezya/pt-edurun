@@ -32,6 +32,9 @@ def run_code_in_docker(code: str):
         )
     except subprocess.TimeoutExpired:
         return JSONResponse(content={"error": "Tiempo de ejecución excedido"}, status_code=408)
+    finally:
+        # Eliminar el archivo temporal
+        os.remove(script_path)
 
     output = result.stdout
     errors = result.stderr
@@ -83,6 +86,10 @@ def run_evaluacion_unittest_in_docker(code: str, evaluacion_id: int):
         )
     except subprocess.TimeoutExpired:
         return JSONResponse(content={"error": "Tiempo de ejecución excedido"}, status_code=408)
+    finally:
+        # Eliminar los archivos temporales
+        os.remove(user_script_path)
+        os.remove(test_script_path)
 
     output = result.stdout
     errors = result.stderr
@@ -133,6 +140,10 @@ def run_tarea_unittest_in_docker(code: str, tarea_id: int):
         )
     except subprocess.TimeoutExpired:
         return JSONResponse(content={"error": "Tiempo de ejecución excedido"}, status_code=408)
+    finally:
+        # Eliminar los archivos temporales
+        os.remove(user_script_path)
+        os.remove(test_script_path)
 
     output = result.stdout
     errors = result.stderr
@@ -183,6 +194,10 @@ def evaluate_activity(code: str, evaluacion_id: int):
         )
     except subprocess.TimeoutExpired:
         return JSONResponse(content={"error": "Tiempo de ejecución excedido"}, status_code=408)
+    finally:
+        # Eliminar los archivos temporales
+        os.remove(user_script_path)
+        os.remove(test_script_path)
 
     output = result.stdout
     errors = result.stderr

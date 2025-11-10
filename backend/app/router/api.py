@@ -86,6 +86,7 @@ async def delete_tarea(tarea_id: int):
 
 # Containers endpoints
 
+'''
 @router.post("/send-code/")
 async def send_code(code: str = Form(...), evaluacion_id: int = Form(...)):
     from functions.containers import evaluate_activity
@@ -105,3 +106,10 @@ async def run_test(code: str = Form(...), tarea_id: int = Form(...)):
 async def run_evaluacion_test(code: str = Form(...), evaluacion_id: int = Form(...)):
     from functions.containers import run_evaluacion_unittest_in_docker
     return run_evaluacion_unittest_in_docker(code, evaluacion_id)
+'''
+
+# AWS Lambda endpoints
+@router.post("/run-code/")
+async def run_code_lambda(code: str = Form(...)):
+    from functions.aws_lambda import execute_python_code
+    return await execute_python_code(code)
