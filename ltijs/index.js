@@ -67,26 +67,10 @@ const setup = async () => {
   /**
    * Register platform
    */
-   await lti.registerPlatform({
-    url: 'https://sandbox.moodledemo.net',
-    name: 'moodle',
-    clientId: 'Trymqct0j6KtREn',
-    authenticationEndpoint: 'https://sandbox.moodledemo.net/moodle/mod/lti/auth.php',
-    accesstokenEndpoint: 'https://sandbox.moodledemo.net/moodle/mod/lti/token.php',
-    authConfig: { method: 'JWK_SET', key: 'https://sandbox.moodledemo.net/moodle/mod/lti/certs.php' }
-  })
   await lti.registerPlatform({
     url: 'https://edurundev.milaulas.com',
     name: 'edurundev',
-    clientId: 'taxkx5XEIY7b9VK',
-    authenticationEndpoint: 'https://edurundev.milaulas.com/mod/lti/auth.php',
-    accesstokenEndpoint: 'https://edurundev.milaulas.com/mod/lti/token.php',
-    authConfig: { method: 'JWK_SET', key: 'https://edurundev.milaulas.com/mod/lti/certs.php' }
-  })
-  await lti.registerPlatform({
-    url: 'https://edurundev.milaulas.com',
-    name: 'edurundev',
-    clientId: 'O51h5Jl408vhAz4',
+    clientId: 'FZMAosXXMgnvVgP',
     authenticationEndpoint: 'https://edurundev.milaulas.com/mod/lti/auth.php',
     accesstokenEndpoint: 'https://edurundev.milaulas.com/mod/lti/token.php',
     authConfig: { method: 'JWK_SET', key: 'https://edurundev.milaulas.com/mod/lti/certs.php' }
@@ -95,14 +79,6 @@ const setup = async () => {
     url: 'https://172.19.202.187',
     name: 'canvas',
     clientId: '10000000000007',
-    authenticationEndpoint: 'https://172.19.202.187/api/lti/authorize_redirect',
-    accesstokenEndpoint: 'https://172.19.202.187/login/oauth2/token',
-    authConfig: { method: 'JWK_SET', key: 'https://172.19.202.187/api/lti/security/jwks' }
-  })
-  await lti.registerPlatform({
-    url: 'https://172.19.202.187',
-    name: 'canvas',
-    clientId: '10000000000008',
     authenticationEndpoint: 'https://172.19.202.187/api/lti/authorize_redirect',
     accesstokenEndpoint: 'https://172.19.202.187/login/oauth2/token',
     authConfig: { method: 'JWK_SET', key: 'https://172.19.202.187/api/lti/security/jwks' }
