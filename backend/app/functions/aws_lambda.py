@@ -38,7 +38,7 @@ async def _execute_code_with_test(code: str, test: str) -> Dict[str, Any]:
     Función interna para ejecutar código con tests usando Lambda.
     Reutilizable para tareas y evaluaciones.
     """
-    url = f"{LAMBDA_API_URL}/TestTarea"
+    url = f"{LAMBDA_API_URL}/EdurunCodeTestTarea"
     
     payload = {
         "code": code,
