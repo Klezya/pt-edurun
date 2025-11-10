@@ -1,8 +1,11 @@
 import json
 import subprocess
-import tempfile
 import os
 import sys
+import uuid
+import shutil
+import io
+from contextlib import redirect_stdout, redirect_stderr
 
 def lambda_handler(event, context):
     try:
@@ -54,186 +57,167 @@ def lambda_handler(event, context):
                 })
             }
         
-        # Crear archivos temporales con el código y el test
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as app_file:
-            app_file.write(code)
-            app_file_path = app_file.name
+        # Crear un directorio único para esta ejecución
+        execution_id = str(uuid.uuid4())
+        work_dir = os.path.join('/tmp', f'execution_{execution_id}')
+        os.makedirs(work_dir, exist_ok=True)
         
-        with tempfile.NamedTemporaryFile(mode='w', suffix='_test.py', delete=False) as test_file:
-            test_file.write(test)
-            test_file_path = test_file.name
+        # Guardar el directorio de trabajo actual
+        original_cwd = os.getcwd()
         
-        # Crear el plugin de pytest en un archivo temporal
-        pytest_plugin_code = '''import pytest
-import io
-from contextlib import redirect_stdout, redirect_stderr
-
-class FormatterPlugin:
-    """
-    Plugin de Pytest para capturar resultados y formatear
-    la salida según los requisitos.
-    """
-    def __init__(self):
-        self.passed = 0
-        self.failed = 0
-        self.total = 0
-        self.failed_test_names = []
-        self.collection_error_messages = []
-
-    def pytest_collectreport(self, report):
-        """
-        Hook #1: Se llama cuando pytest intenta 'recolectar' (importar)
-        un archivo de test.
-        """
-        if report.failed:
-            error_text = str(report.longrepr)
-            import_error_prefix = "ImportError: cannot import name '"
+        try:
+            # Crear archivos con nombres específicos directamente
+            app_file_path = os.path.join(work_dir, 'app.py')
+            test_file_path = os.path.join(work_dir, 'test_code.py')
             
-            if import_error_prefix in error_text:
-                try:
-                    start_index = error_text.find(import_error_prefix) + len(import_error_prefix)
-                    end_index = error_text.find("'", start_index)
+            # Escribir el código del usuario
+            with open(app_file_path, 'w') as app_file:
+                app_file.write(code)
+            
+            # Escribir el test
+            with open(test_file_path, 'w') as test_file:
+                test_file.write(test)
+            
+            # Cambiar al directorio de trabajo
+            os.chdir(work_dir)
+            
+            # Agregar el directorio de trabajo al path
+            sys.path.insert(0, work_dir)
+            
+            # Importar pytest aquí para asegurar que se use la versión de la layer
+            import pytest
+            
+            # Definir el plugin de pytest
+            class FormatterPlugin:
+                """
+                Plugin de Pytest para capturar resultados y formatear
+                la salida según los requisitos.
+                """
+                def __init__(self):
+                    self.passed = 0
+                    self.failed = 0
+                    self.total = 0
+                    self.failed_test_names = []
+                    self.collection_error_messages = []
+
+                def pytest_collectreport(self, report):
+                    """
+                    Hook #1: Se llama cuando pytest intenta 'recolectar' (importar)
+                    un archivo de test.
+                    """
+                    if report.failed:
+                        error_text = str(report.longrepr)
+                        import_error_prefix = "ImportError: cannot import name '"
                         
-                    if end_index != -1:
-                        function_name = error_text[start_index:end_index]
-                        self.collection_error_messages.append(f"No se encuentra la función '{function_name}' en el código")
-                    else:
-                        self.collection_error_messages.append(f"Error de importación: {error_text.splitlines()[-1]}")  
-                except Exception:
-                    self.collection_error_messages.append(f"Error de importación: {error_text.splitlines()[-1]}")
-            else:
-                self.collection_error_messages.append(f"Se ha encontrado el siguiente error en el codigo, porfavor corregir antes de correr los tests: {error_text.splitlines()[-1]}")
+                        if import_error_prefix in error_text:
+                            try:
+                                start_index = error_text.find(import_error_prefix) + len(import_error_prefix)
+                                end_index = error_text.find("'", start_index)
+                                    
+                                if end_index != -1:
+                                    function_name = error_text[start_index:end_index]
+                                    self.collection_error_messages.append(f"No se encuentra la función '{function_name}' en el código")
+                                else:
+                                    self.collection_error_messages.append(f"Error de importación: {error_text.splitlines()[-1]}")  
+                            except Exception:
+                                self.collection_error_messages.append(f"Error de importación: {error_text.splitlines()[-1]}")
+                        else:
+                            self.collection_error_messages.append(f"Se ha encontrado el siguiente error en el codigo, porfavor corregir antes de correr los tests: {error_text.splitlines()[-1]}")
 
-    def pytest_collection_finish(self, session):
-        """
-        Hook #3: Se llama después de que pytest ha terminado de 
-        encontrar todos los tests.
-        """
-        # Guardamos el número total de tests que encontró
-        self.total = len(session.items)
+                def pytest_collection_finish(self, session):
+                    """
+                    Hook #3: Se llama después de que pytest ha terminado de 
+                    encontrar todos los tests.
+                    """
+                    # Guardamos el número total de tests que encontró
+                    self.total = len(session.items)
 
-    def pytest_runtest_logreport(self, report):
-        """
-        Hook #2: Se llama después de que un test se ejecuta.
-        """
-        if report.when == 'call':
-            if report.passed:
-                self.passed += 1
-            elif report.failed:
-                self.failed += 1
-                test_name = report.nodeid.removeprefix("test_code.py::")
+                def pytest_runtest_logreport(self, report):
+                    """
+                    Hook #2: Se llama después de que un test se ejecuta.
+                    """
+                    if report.when == 'call':
+                        if report.passed:
+                            self.passed += 1
+                        elif report.failed:
+                            self.failed += 1
+                            test_name = report.nodeid.removeprefix("test_code.py::")
+                            
+                            error_text = str(report.longrepr)
+                            name_error_prefix = "NameError: name '"
+                            if name_error_prefix in error_text:
+                                try:
+                                    start = error_text.find(name_error_prefix) + len(name_error_prefix)
+                                    end = error_text.find("'", start)
+                                    name = error_text[start:end]
+
+                                    message = f"{test_name} -> [Test no implementado correctamente]: La funcion '{name}' no existe. Porfavor contacte con su docente."
+                                    self.failed_test_names.append(message)
+                                except Exception:
+                                    self.failed_test_names.append(f"{report.nodeid} (Error: NameError no parseable)")
+                            else:
+                                self.failed_test_names.append(test_name)
+            
+            # Crear instancia del plugin
+            plugin = FormatterPlugin()
+            
+            # Capturar la salida de pytest
+            output_buffer = io.StringIO()
+            
+            try:
+                with redirect_stdout(output_buffer), redirect_stderr(output_buffer):
+                    # Ejecutar pytest con timeout (sin timeout plugin que puede no estar instalado)
+                    pytest.main([
+                        'test_code.py', 
+                        '-v',
+                        '--tb=short',  # Traceback corto
+                        '-x'  # Detener en el primer error
+                    ], plugins=[plugin])
                 
-                error_text = str(report.longrepr)
-                name_error_prefix = "NameError: name '"
-                if name_error_prefix in error_text:
-                    try:
-                        start = error_text.find(name_error_prefix) + len(name_error_prefix)
-                        end = error_text.find("'", start)
-                        name = error_text[start:end]
-
-                        message = f"{test_name} -> [Test no implementado correctamente]: La funcion '{name}' no existe. Porfavor contacte con su docente."
-                        self.failed_test_names.append(message)
-                    except Exception:
-                        self.failed_test_names.append(f"{report.nodeid} (Error: NameError no parseable)")
+                # Construir la salida formateada
+                output_lines = []
+                
+                if plugin.collection_error_messages:
+                    output_lines.append("\n[Errores encontrados al verificar el código]")
+                    for message in plugin.collection_error_messages:
+                        output_lines.append(f"  > {message}")
+                    output = "\n".join(output_lines)
+                    return_code = 1
+                elif plugin.total == 0:
+                    output = "\n[ADVERTENCIA]: No se han programado tests para esta actividad."
+                    return_code = 2
                 else:
-                    self.failed_test_names.append(test_name)
+                    output_lines.append(f"\nTests Superados: {plugin.passed}")
+                    output_lines.append(f"Tests no superados: {plugin.failed}")
+                    output_lines.append(f"Tests Totales: {plugin.total}")
+                    
+                    if plugin.failed_test_names:
+                        output_lines.append("\nTests que no pasaron:")
+                        for name in plugin.failed_test_names:
+                            output_lines.append(f"  - {name}")
+                    
+                    output_lines.append(f"\nPuntaje obtenido: {int(plugin.passed / plugin.total * 100)}%")
+                    output = "\n".join(output_lines)
+                    return_code = 0 if plugin.failed == 0 else 1
+                
+                errors = ""
+                
+            except Exception as e:
+                output = ""
+                errors = f"Error al ejecutar pytest: {str(e)}"
+                return_code = 1
         
-
-plugin = FormatterPlugin()
-test_files = ['test_code.py']
-
-f = io.StringIO()
-with redirect_stdout(f), redirect_stderr(f):
-    pytest.main(test_files, plugins=[plugin])
-
-if plugin.collection_error_messages:
-    print("\\n[Errores encontrados al verificar el código]")
-    for message in plugin.collection_error_messages:
-        print(f"  > {message}")
-    exit(1)
-
-if plugin.total == 0 and not plugin.collection_error_messages:
-    print("\\n[ADVERTENCIA]: No se han programado tests para esta actividad.")
-    exit(2)
-
-print(f"\\nTests Superados: {plugin.passed}")
-print(f"Tests no superados: {plugin.failed}")
-print(f"Tests Totales: {plugin.total}")
-
-if plugin.failed_test_names:
-    print("\\nTests que no pasaron:")
-    for name in plugin.failed_test_names:
-        print(f"  - {name}")
-
-if plugin.total > 0:
-    print(f"\\nPuntaje obtenido: {int(plugin.passed / plugin.total * 100)}%")
-'''
-        
-        with tempfile.NamedTemporaryFile(mode='w', suffix='_plugin.py', delete=False) as plugin_file:
-            plugin_file.write(pytest_plugin_code)
-            plugin_file_path = plugin_file.name
-        
-        # Obtener el directorio temporal para configurar PYTHONPATH
-        temp_dir = os.path.dirname(app_file_path)
-        test_dir = os.path.dirname(test_file_path)
-        
-        # Crear enlaces simbólicos con nombres específicos para que pytest los encuentre
-        app_link = os.path.join(temp_dir, 'app.py')
-        test_link = os.path.join(temp_dir, 'test_code.py')
-        
-        try:
-            os.symlink(app_file_path, app_link)
-            os.symlink(test_file_path, test_link)
-        except OSError:
-            # Si ya existen, los eliminamos y recreamos
-            if os.path.exists(app_link):
-                os.unlink(app_link)
-            if os.path.exists(test_link):
-                os.unlink(test_link)
-            os.symlink(app_file_path, app_link)
-            os.symlink(test_file_path, test_link)
-        
-        try:
-            # Configurar el entorno para pytest
-            env = os.environ.copy()
-            env['PYTHONPATH'] = temp_dir
-            
-            # Ejecutar el plugin de pytest
-            result = subprocess.run(
-                [sys.executable, plugin_file_path],
-                capture_output=True,
-                text=True,
-                timeout=30,  # Timeout de 30 segundos
-                cwd=temp_dir,
-                env=env
-            )
-            
-            output = result.stdout
-            errors = result.stderr
-            return_code = result.returncode
-            
-        except subprocess.TimeoutExpired:
-            output = ""
-            errors = "Error: El código excedió el tiempo límite de ejecución (30 segundos)"
-            return_code = 124
-        
-        except Exception as e:
-            output = ""
-            errors = f"Error al ejecutar los tests: {str(e)}"
-            return_code = 1
-    
         finally:
-            # Limpiar todos los archivos temporales
-            if os.path.exists(app_file_path):
-                os.unlink(app_file_path)
-            if os.path.exists(test_file_path):
-                os.unlink(test_file_path)
-            if os.path.exists(plugin_file_path):
-                os.unlink(plugin_file_path)
-            if os.path.exists(app_link):
-                os.unlink(app_link)
-            if os.path.exists(test_link):
-                os.unlink(test_link)
+            # Restaurar el directorio de trabajo original
+            os.chdir(original_cwd)
+            
+            # Limpiar el path
+            if work_dir in sys.path:
+                sys.path.remove(work_dir)
+            
+            # Limpiar todo el directorio de ejecución
+            if os.path.exists(work_dir):
+                shutil.rmtree(work_dir, ignore_errors=True)
         
         # Determinar el statusCode basado en el resultado de la ejecución
         status_code = 200 if return_code == 0 else 400
