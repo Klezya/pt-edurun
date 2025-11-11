@@ -14,6 +14,13 @@ const isSubmitting = ref(false)
 
 onMounted(async () => {
   try {
+    // Obtener el ltik de la URL y guardarlo en sessionStorage si existe
+    const urlParams = new URLSearchParams(window.location.search)
+    const ltik = urlParams.get('ltik')
+    if (ltik) {
+      sessionStorage.setItem('ltik', ltik)
+    }
+    
     const courseInfo = await getCourseInfo()
     
     const courseId = courseInfo.id
@@ -28,8 +35,7 @@ onMounted(async () => {
 
 async function seleccionarEvaluacion(evaluacion: Actividad) {
 
-    const urlParams = new URLSearchParams(window.location.search)
-    const ltik = urlParams.get('ltik')
+    const ltik = sessionStorage.getItem('ltik')
     isSubmitting.value = true
     
     try {
