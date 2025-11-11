@@ -13,4 +13,4 @@ RUN pip install --no-cache-dir -U pip setuptools wheel \
 WORKDIR /app
 
 # Default command (can be overridden by docker run)
-CMD ["python", "-m", "pytest", "-q"]
+CMD ["python", "/app/pytest_plugin.py"]

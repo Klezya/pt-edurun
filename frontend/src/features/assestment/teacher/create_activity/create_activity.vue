@@ -19,6 +19,29 @@ const formData = ref({
   tipo: 'tarea' as 'tarea' | 'evaluacion' // nuevo campo
 })
 
+// Código de ejemplo para pytest
+const ejemploPytest = `# Ejemplo de test con pytest
+# Los estudiantes deben crear un archivo app.py con la función suma
+
+from app import suma
+
+def test_suma_positivos():
+    """Prueba suma de números positivos"""
+    assert suma(2, 3) == 5
+    assert suma(10, 5) == 15
+
+def test_suma_negativos():
+    """Prueba suma de números negativos"""
+    assert suma(-2, -3) == -5
+    assert suma(-10, 5) == -5
+
+def test_suma_cero():
+    """Prueba suma con cero"""
+    assert suma(0, 0) == 0
+    assert suma(5, 0) == 5
+    assert suma(0, 5) == 5
+`
+
 const isSubmitting = ref(false)
 const errorMessage = ref('')
 const successMessage = ref('')
@@ -30,7 +53,7 @@ let editorView: EditorView | null = null
 onMounted(() => {
   if (editorContainer.value) {
     editorView = new EditorView({
-      doc: formData.value.test || '',
+      doc: ejemploPytest, // Usar el código de ejemplo
       extensions: [
         basicSetup,
         python(),
@@ -43,6 +66,8 @@ onMounted(() => {
       ],
       parent: editorContainer.value,
     })
+    // Inicializar formData.test con el ejemplo
+    formData.value.test = ejemploPytest
   }
 })
 
