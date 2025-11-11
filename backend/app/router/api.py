@@ -124,7 +124,7 @@ async def run_evaluacion_test_lambda(code: str = Form(...), evaluacion_id: int =
     from functions.aws_lambda import execute_code_test_evaluacion
     return await execute_code_test_evaluacion(code, evaluacion_id)
 
-@router.post("/evaluate-activity/")
+@router.post("/send-code/")
 async def evaluate_activity_lambda(code: str = Form(...), evaluacion_id: int = Form(...)):
     from functions.aws_lambda import evaluate_activity
     return await evaluate_activity(code, evaluacion_id)
