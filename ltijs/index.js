@@ -83,6 +83,14 @@ const setup = async () => {
     accesstokenEndpoint: 'https://172.19.202.187/login/oauth2/token',
     authConfig: { method: 'JWK_SET', key: 'https://172.19.202.187/api/lti/security/jwks' }
   })
+   await lti.registerPlatform({
+    url: 'https://dithionous-unautomatically-cheri.ngrok-free.dev',
+    name: 'canvas_production',
+    clientId: '10000000000010',
+    authenticationEndpoint: 'https://dithionous-unautomatically-cheri.ngrok-free.dev/api/lti/authorize_redirect',
+    accesstokenEndpoint: 'https://dithionous-unautomatically-cheri.ngrok-free.dev/login/oauth2/token',
+    authConfig: { method: 'JWK_SET', key: 'https://dithionous-unautomatically-cheri.ngrok-free.dev/api/lti/security/jwks' }
+  })
 }
 
 setup()
