@@ -76,7 +76,7 @@ const setup = async () => {
     authConfig: { method: 'JWK_SET', key: 'https://edurundev.milaulas.com/mod/lti/certs.php' }
   })
    await lti.registerPlatform({
-    url: 'https://201.187.236.176',
+    url: 'https://201.187.227.133',
     name: 'canvas',
     clientId: '10000000000007',
     authenticationEndpoint: 'https://201.187.227.133/api/lti/authorize_redirect',
