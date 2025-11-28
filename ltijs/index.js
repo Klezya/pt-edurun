@@ -79,9 +79,9 @@ const setup = async () => {
     url: 'https://201.187.236.176',
     name: 'canvas',
     clientId: '10000000000007',
-    authenticationEndpoint: 'https://201.187.236.176/api/lti/authorize_redirect',
-    accesstokenEndpoint: 'https://201.187.236.176/login/oauth2/token',
-    authConfig: { method: 'JWK_SET', key: 'https://201.187.236.176/api/lti/security/jwks' }
+    authenticationEndpoint: 'https://201.187.227.133/api/lti/authorize_redirect',
+    accesstokenEndpoint: 'https://201.187.227.133/login/oauth2/token',
+    authConfig: { method: 'JWK_SET', key: 'https://201.187.227.133/api/lti/security/jwks' }
   })
 }
 
