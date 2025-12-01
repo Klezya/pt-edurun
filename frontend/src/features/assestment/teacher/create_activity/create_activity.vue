@@ -10,13 +10,16 @@ import { oneDark } from '@codemirror/theme-one-dark'
 // Servicios
 import { createEvaluacion, createTarea } from './create_activity.service'
 
+// Componentes
+import PytestInstructions from './pytest_instructions.vue'
+
 const router = useRouter()
 
 const formData = ref({
   titulo: '',
   contenido: '',
   test: '',
-  tipo: 'tarea' as 'tarea' | 'evaluacion' // nuevo campo
+  tipo: 'tarea' as 'tarea' | 'evaluacion'
 })
 
 // Código de ejemplo para pytest
@@ -49,6 +52,13 @@ const successMessage = ref('')
 // CodeMirror
 const editorContainer = ref<HTMLElement | null>(null)
 let editorView: EditorView | null = null
+
+// Referencia al componente de instrucciones
+const pytestInstructionsRef = ref<InstanceType<typeof PytestInstructions> | null>(null)
+
+const showInstructions = () => {
+  pytestInstructionsRef.value?.open()
+}
 
 onMounted(() => {
   if (editorContainer.value) {
@@ -276,16 +286,21 @@ const handleCancel = () => {
                   </div>
                   
                   <div class="space-y-3">
-                    <p class="text-slate-400 text-sm flex items-start gap-2">
-                      <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    <!-- Botón para abrir instructivo -->
+                    <button
+                      type="button"
+                      @click="showInstructions"
+                      class="w-full flex items-center justify-center gap-2 rounded-lg border border-sky-500/30 bg-sky-500/10 px-4 py-3 text-sm font-medium text-sky-300 transition-all duration-200 hover:bg-sky-500/20 hover:border-sky-500/50 hover:text-sky-200 hover:scale-[1.02] active:scale-[0.98]"
+                    >
+                      <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
                       </svg>
-                      <span>
-                        Escriba el código de prueba Pytest que se ejecutará para evaluar las entregas de los estudiantes.
-                        Deje vacío si no requiere pruebas automatizadas.
-                      </span>
-                    </p>
-                    
+                      <span>📖 Ver Instructivo de Uso de Pytest</span>
+                      <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                      </svg>
+                    </button>
+
                     <!-- CodeMirror Container -->
                     <div 
                       ref="editorContainer" 
@@ -324,6 +339,9 @@ const handleCancel = () => {
         </div>
       </main>
     </div>
+
+    <!-- Componente de instrucciones de Pytest -->
+    <PytestInstructions ref="pytestInstructionsRef" />
   </div>
 </template>
 
