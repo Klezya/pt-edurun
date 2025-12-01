@@ -349,7 +349,7 @@ onMounted(() => {
         }),
         EditorView.theme({
           '&': {
-            height: '65vh',
+            height: '35vh',
             borderRadius: '0.75rem',
             border: '1px solid rgba(148, 163, 184, 0.1)',
             backgroundColor: 'rgba(15, 23, 42, 0.6)',
