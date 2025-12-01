@@ -116,15 +116,15 @@ defineExpose({
                     </div>
 
                     <!-- Assert -->
-                    <div class="rounded-lg border border-teal-500/30 bg-teal-950/20 p-4">
+                    <div class="rounded-lg border border-cyan-500/30 bg-cyan-950/20 p-4">
                       <div class="flex items-start gap-3">
-                        <div class="rounded bg-teal-500/20 p-2">
-                          <svg class="h-5 w-5 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="rounded bg-cyan-500/20 p-2">
+                          <svg class="h-5 w-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                           </svg>
                         </div>
                         <div class="flex-1">
-                          <h4 class="mb-2 font-semibold text-teal-300">¿Qué es un assert?</h4>
+                          <h4 class="mb-2 font-semibold text-cyan-300">¿Qué es un assert?</h4>
                           <p class="text-sm text-slate-300 mb-2">
                             Un <strong>assert</strong> es una verificación que comprueba si una condición es verdadera. 
                             Si la condición es <span class="text-green-400">verdadera</span>, el assert pasa. 
@@ -146,15 +146,15 @@ defineExpose({
                     </div>
 
                     <!-- Cómo funciona -->
-                    <div class="rounded-lg border border-violet-500/30 bg-violet-950/20 p-4">
+                    <div class="rounded-lg border border-cyan-500/30 bg-cyan-950/20 p-4">
                       <div class="flex items-start gap-3">
-                        <div class="rounded bg-violet-500/20 p-2">
-                          <svg class="h-5 w-5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="rounded bg-cyan-500/20 p-2">
+                          <svg class="h-5 w-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                           </svg>
                         </div>
                         <div class="flex-1">
-                          <h4 class="mb-2 font-semibold text-violet-300">¿Cómo funciona el proceso?</h4>
+                          <h4 class="mb-2 font-semibold text-cyan-300">¿Cómo funciona el proceso?</h4>
                           <ol class="text-sm text-slate-300 space-y-2 list-decimal ml-4">
                             <li>Pytest ejecuta cada <strong>función test_*</strong> una por una</li>
                             <li>Dentro de cada función, ejecuta los <strong>asserts</strong> en orden</li>
@@ -174,25 +174,25 @@ defineExpose({
                     🎯 Reglas Importantes del Sistema
                   </h3>
                   <div class="space-y-3">
-                    <div class="rounded-lg border border-amber-500/30 bg-amber-950/20 p-4">
+                    <div class="rounded-lg border border-yellow-500/30 bg-yellow-950/20 p-4">
                       <div class="flex items-start gap-3">
-                        <svg class="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="mt-0.5 h-5 w-5 flex-shrink-0 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
                         <div class="space-y-2 text-sm">
-                          <p class="font-semibold text-amber-300">1. El código del estudiante siempre se llama "app"</p>
+                          <p class="font-semibold text-yellow-300">1. El código del estudiante siempre se llama "app"</p>
                           <p class="text-slate-300">Todas las importaciones deben ser desde <code class="rounded bg-slate-800 px-2 py-0.5 text-sky-400">app</code>, no uses otros nombres.</p>
                         </div>
                       </div>
                     </div>
 
-                    <div class="rounded-lg border border-purple-500/30 bg-purple-950/20 p-4">
+                    <div class="rounded-lg border border-yellow-500/30 bg-yellow-950/20 p-4">
                       <div class="flex items-start gap-3">
-                        <svg class="mt-0.5 h-5 w-5 flex-shrink-0 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="mt-0.5 h-5 w-5 flex-shrink-0 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
                         </svg>
                         <div class="space-y-2 text-sm">
-                          <p class="font-semibold text-purple-300">2. Cada función "test_*" cuenta como 1 test completo</p>
+                          <p class="font-semibold text-yellow-300">2. Cada función "test_*" cuenta como 1 test completo</p>
                           <p class="text-slate-300">No importa cuántos <code class="rounded bg-slate-800 px-2 py-0.5 text-sky-400">assert</code> tenga dentro, cada función <code class="rounded bg-slate-800 px-2 py-0.5 text-sky-400">test_*()</code> es considerada como una unidad de test.</p>
                         </div>
                       </div>
@@ -218,27 +218,27 @@ defineExpose({
                       </div>
                     </div>
 
-                    <div class="rounded-lg border border-green-500/30 bg-green-950/20 p-4">
+                    <div class="rounded-lg border border-cyan-500/30 bg-cyan-950/20 p-4">
                       <div class="flex items-start gap-3">
-                        <svg class="mt-0.5 h-5 w-5 flex-shrink-0 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="mt-0.5 h-5 w-5 flex-shrink-0 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
                         </svg>
                         <div class="space-y-2 text-sm">
-                          <p class="font-semibold text-green-300">3. Cálculo automático del puntaje</p>
+                          <p class="font-semibold text-cyan-300">3. Cálculo automático del puntaje</p>
                           <p class="text-slate-300">El sistema calcula el porcentaje automáticamente basado en la cantidad de tests: <strong>Puntaje = (tests_pasados / tests_totales) × 100</strong></p>
                           <p class="text-slate-400 italic">Ejemplo: 5 tests = 20 puntos cada uno. No puedes cambiar el valor individual.</p>
                         </div>
                       </div>
                     </div>
 
-                    <div class="rounded-lg border border-blue-500/30 bg-blue-950/20 p-4">
+                    <div class="rounded-lg border border-cyan-500/30 bg-cyan-950/20 p-4">
                       <div class="flex items-start gap-3">
-                        <svg class="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="mt-0.5 h-5 w-5 flex-shrink-0 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                         </svg>
                         <div class="space-y-2 text-sm">
-                          <p class="font-semibold text-blue-300">4. Visibilidad de los nombres de tests</p>
+                          <p class="font-semibold text-cyan-300">4. Visibilidad de los nombres de tests</p>
                           <p class="text-slate-300">Los estudiantes <strong>solo ven el nombre del test si NO lo pasan</strong>. Elige tu estrategia:</p>
                           <ul class="ml-4 mt-2 space-y-1 list-disc text-slate-400">
                             <li>Nombres genéricos (<code class="text-sky-400">test1, test2</code>) para no dar pistas</li>
@@ -281,7 +281,7 @@ defineExpose({
                   <h3 class="mb-3 text-lg font-semibold text-sky-400">
                     ⚖️ Estrategia de Ponderación
                   </h3>
-                  <div class="rounded-lg border border-indigo-500/30 bg-indigo-950/20 p-4">
+                  <div class="rounded-lg border border-cyan-500/30 bg-cyan-950/20 p-4">
                     <p class="mb-3 text-slate-300">
                       Si quieres dar más peso a ciertos criterios, <strong>crea más funciones de test</strong> para ese criterio:
                     </p>
@@ -394,6 +394,74 @@ defineExpose({
                       <div>
                         <code class="text-sm text-sky-400">assert len(lista) == n</code>
                         <p class="mt-1 text-xs text-slate-400">Verifica longitud</p>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                <!-- Advertencia sobre números decimales -->
+                <section>
+                  <h3 class="mb-3 text-lg font-semibold text-sky-400">
+                    ⚠️ Cuidado con Números Decimales
+                  </h3>
+                  <div class="rounded-lg border border-yellow-500/30 bg-yellow-950/20 p-4">
+                    <div class="flex items-start gap-3 mb-3">
+                      <svg class="mt-0.5 h-5 w-5 flex-shrink-0 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                      </svg>
+                      <div class="flex-1">
+                        <h4 class="font-semibold text-yellow-300 mb-2">Problema de Precisión con Decimales</h4>
+                        <p class="text-sm text-slate-300 mb-3">
+                          Los números decimales en Python pueden tener problemas de precisión debido a la representación binaria. 
+                          Por ejemplo, <code class="rounded bg-slate-800 px-2 py-0.5 text-orange-400">1.1 + 2.2</code> NO es exactamente <code class="rounded bg-slate-800 px-2 py-0.5 text-orange-400">3.3</code>, 
+                          sino <code class="rounded bg-slate-800 px-2 py-0.5 text-yellow-400">3.3000000000000003</code>
+                        </p>
+                        
+                        <div class="space-y-3">
+                          <!-- Problema -->
+                          <div class="rounded bg-slate-950 p-3">
+                            <p class="text-xs text-red-400 mb-1">❌ Esto fallará:</p>
+                            <code class="text-xs text-slate-300">
+                              <span class="text-purple-400">assert</span> <span class="text-yellow-400">suma</span>(<span class="text-orange-400">1.1</span>, <span class="text-orange-400">2.2</span>) == <span class="text-orange-400">3.3</span>
+                              <span class="text-gray-500"><br/># Resultado real: 3.3000000000000003 ≠ 3.3</span>
+                            </code>
+                          </div>
+
+                          <!-- Solución 1 -->
+                          <div class="rounded bg-slate-950 p-3">
+                            <p class="text-xs text-green-400 mb-1">✅ Solución 1: Usa pytest.approx()</p>
+                            <code class="text-xs text-slate-300">
+                              <span class="text-purple-400">import</span> <span class="text-cyan-400">pytest</span><br/>
+                              <span class="text-purple-400">assert</span> <span class="text-yellow-400">suma</span>(<span class="text-orange-400">1.1</span>, <span class="text-orange-400">2.2</span>) == pytest.<span class="text-yellow-400">approx</span>(<span class="text-orange-400">3.3</span>)
+                              <span class="text-gray-500"><br/># Tolera pequeñas diferencias de precisión</span>
+                            </code>
+                          </div>
+
+                          <!-- Solución 2 -->
+                          <div class="rounded bg-slate-950 p-3">
+                            <p class="text-xs text-green-400 mb-1">✅ Solución 2: Usa números simples</p>
+                            <code class="text-xs text-slate-300">
+                              <span class="text-purple-400">assert</span> <span class="text-yellow-400">suma</span>(<span class="text-orange-400">2.5</span>, <span class="text-orange-400">3.5</span>) == <span class="text-orange-400">6.0</span>
+                              <span class="text-gray-500"><br/># Números como 0.5, 2.5, 5.0 se representan exactamente</span>
+                            </code>
+                          </div>
+
+                          <!-- Solución 3 -->
+                          <div class="rounded bg-slate-950 p-3">
+                            <p class="text-xs text-green-400 mb-1">✅ Solución 3: Redondea el resultado</p>
+                            <code class="text-xs text-slate-300">
+                              <span class="text-purple-400">assert</span> <span class="text-yellow-400">round</span>(<span class="text-yellow-400">suma</span>(<span class="text-orange-400">1.1</span>, <span class="text-orange-400">2.2</span>), <span class="text-orange-400">10</span>) == <span class="text-orange-400">3.3</span>
+                              <span class="text-gray-500"><br/># Redondea a 10 decimales antes de comparar</span>
+                            </code>
+                          </div>
+                        </div>
+
+                        <div class="mt-3 p-3 rounded bg-cyan-950/30 border border-cyan-500/20">
+                          <p class="text-xs text-cyan-200">
+                            <strong>💡 Recomendación:</strong> Siempre usa <code class="rounded bg-slate-800 px-1 text-sky-400">pytest.approx()</code> cuando trabajes con decimales. 
+                            Es la solución más robusta y profesional.
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -564,9 +632,9 @@ Puntaje obtenido: 60%</pre>
                       </p>
                     </div>
 
-                    <div class="rounded-lg border border-amber-500/30 bg-amber-950/20 p-4">
-                      <h4 class="mb-2 font-semibold text-amber-300">Si hay errores en el código:</h4>
-                      <pre class="overflow-x-auto rounded bg-slate-950 p-3 text-sm text-amber-400">[Errores encontrados al verificar el código]
+                    <div class="rounded-lg border border-yellow-500/30 bg-yellow-950/20 p-4">
+                      <h4 class="mb-2 font-semibold text-yellow-300">Si hay errores en el código:</h4>
+                      <pre class="overflow-x-auto rounded bg-slate-950 p-3 text-sm text-yellow-400">[Errores encontrados al verificar el código]
   > No se encuentra la función 'factorial' en el código</pre>
                       <p class="mt-2 text-sm text-slate-300">
                         Esto ocurre cuando el estudiante no ha definido la función que se intenta importar
@@ -576,14 +644,14 @@ Puntaje obtenido: 60%</pre>
                 </section>
 
                 <!-- Nota importante -->
-                <div class="rounded-lg border border-blue-500/20 bg-blue-950/20 p-4">
+                <div class="rounded-lg border border-cyan-500/20 bg-cyan-950/20 p-4">
                   <div class="flex items-start gap-3">
-                    <svg class="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="mt-0.5 h-5 w-5 flex-shrink-0 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
                     <div class="text-sm">
-                      <p class="font-medium text-blue-300">Resumen:</p>
-                      <ul class="mt-2 space-y-1 text-blue-200 list-disc ml-4">
+                      <p class="font-medium text-cyan-300">Resumen:</p>
+                      <ul class="mt-2 space-y-1 text-cyan-200 list-disc ml-4">
                         <li>Siempre importa desde <strong>app</strong></li>
                         <li>Cada función <strong>test_*()</strong> = 1 test completo</li>
                         <li>El puntaje es automático: <strong>(tests_pasados / tests_totales) × 100</strong></li>

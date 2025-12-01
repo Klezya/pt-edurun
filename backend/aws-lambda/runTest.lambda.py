@@ -180,7 +180,6 @@ def lambda_handler(event, context):
                         'test_code.py',
                         '-v',
                         '--tb=short',  # Traceback corto
-                        '-x',  # Detener en el primer error
                         '-p', 'no:cacheprovider',  # Desactivar caché de pytest
                         '--override-ini=python_files=test_code.py',  # Solo este archivo
                         '--override-ini=python_classes=',  # No buscar clases
