@@ -76,12 +76,12 @@ const setup = async () => {
     authConfig: { method: 'JWK_SET', key: 'https://edurundev.milaulas.com/mod/lti/certs.php' }
   })
    await lti.registerPlatform({
-    url: 'https://201.187.235.236',
+    url: 'https://201.187.236.158',
     name: 'canvas',
     clientId: '10000000000007',
-    authenticationEndpoint: 'https://201.187.235.236/api/lti/authorize_redirect',
-    accesstokenEndpoint: 'https://201.187.235.236/login/oauth2/token',
-    authConfig: { method: 'JWK_SET', key: 'https://201.187.235.236/api/lti/security/jwks' }
+    authenticationEndpoint: 'https://201.187.236.158/api/lti/authorize_redirect',
+    accesstokenEndpoint: 'https://201.187.236.158/login/oauth2/token',
+    authConfig: { method: 'JWK_SET', key: 'https://201.187.236.158/api/lti/security/jwks' }
   })
 }
 
